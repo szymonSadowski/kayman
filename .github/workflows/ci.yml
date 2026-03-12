@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+jobs:
+  ci:
+    name: Lint, Typecheck & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Build shared (required before typecheck/test of other packages)
+        run: pnpm --filter @kayman/shared build
+
+      - run: pnpm lint
+
+      - name: Typecheck (shared + cli only; raycast requires Raycast CLI)
+        run: pnpm --filter @kayman/shared --filter @kayman/cli typecheck
+
+      - run: pnpm test

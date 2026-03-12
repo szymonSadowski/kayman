@@ -1,0 +1,63 @@
+{
+  "name": "kayman",
+  "title": "kayman",
+  "description": "Meeting recording and AI summary tool",
+  "icon": "icon.png",
+  "author": "szymonsadowski",
+  "license": "MIT",
+  "version": "0.0.1",
+  "commands": [
+    {
+      "name": "start",
+      "title": "Start Recording",
+      "description": "Start a recording session",
+      "mode": "view"
+    },
+    {
+      "name": "stop",
+      "title": "Stop Recording",
+      "description": "Stop the active recording session",
+      "mode": "no-view"
+    },
+    {
+      "name": "last",
+      "title": "Last Meeting",
+      "description": "Show the most recent meeting summary",
+      "mode": "view"
+    },
+    {
+      "name": "memo",
+      "title": "Record Memo",
+      "description": "Start a memo recording without a project",
+      "mode": "no-view"
+    },
+    {
+      "name": "status",
+      "title": "Recording Status",
+      "description": "Check recording status and duration",
+      "mode": "view"
+    },
+    {
+      "name": "menu-bar",
+      "title": "Recording Indicator",
+      "description": "Live recording duration in the menu bar",
+      "mode": "menu-bar"
+    }
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "ray develop",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@raycast/api": "^1.104.5",
+    "@kayman/shared": "workspace:*",
+    "execa": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "typescript": "^5.7.0"
+  }
+}
