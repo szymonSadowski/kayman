@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, afterAll, vi } from 'vitest'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -72,8 +72,36 @@ describe('session', () => {
     expect(() => clearSession()).not.toThrow()
   })
 
-  // cleanup temp dir on process exit
-  process.on('exit', () => {
+  it('writeSession throws on pid <= 0', () => {
+    expect(() => writeSession({ ...MOCK_SESSION, pid: 0 })).toThrow('invalid pid')
+    expect(() => writeSession({ ...MOCK_SESSION, pid: -1 })).toThrow('invalid pid')
+  })
+
+  it('writeSession throws on empty audioPath', () => {
+    expect(() => writeSession({ ...MOCK_SESSION, audioPath: '' })).toThrow('audioPath')
+  })
+
+  it('writeSession + readSession round-trips with project null', () => {
+    const nullProject: Session = { ...MOCK_SESSION, project: null }
+    writeSession(nullProject)
+    expect(readSession()).toEqual(nullProject)
+  })
+
+  it('readSession returns null and deletes corrupted JSON file', () => {
+    fs.mkdirSync(path.dirname(testSessionPath), { recursive: true })
+    fs.writeFileSync(testSessionPath, 'not-json', 'utf8')
+    expect(readSession()).toBeNull()
+    expect(fs.existsSync(testSessionPath)).toBe(false)
+  })
+
+  it('readSession returns null and deletes file with invalid session shape', () => {
+    fs.mkdirSync(path.dirname(testSessionPath), { recursive: true })
+    fs.writeFileSync(testSessionPath, JSON.stringify({ pid: 'not-a-number' }), 'utf8')
+    expect(readSession()).toBeNull()
+    expect(fs.existsSync(testSessionPath)).toBe(false)
+  })
+
+  afterAll(() => {
     try {
       fs.rmSync(testTmpDir, { recursive: true, force: true })
     } catch {
