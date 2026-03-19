@@ -8,7 +8,6 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ### Epic 2: Audio Recording & Session Management
 
-- [ ] **2.1** Swift Audio Capture Shim
 - [ ] **2.2** Session State Manager
 - [ ] **2.3** `kayman start` — Project Picker & Recording
 - [ ] **2.4** `kayman stop` & `kayman status`
@@ -33,7 +32,9 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 🔄 In Progress
 
-_Nothing in progress yet._
+### Epic 2: Audio Recording & Session Management
+
+- [ ] **2.1** Swift Audio Capture Shim — `_bmad-output/implementation-artifacts/2-1-swift-audio-capture-shim.md`
 
 ---
 
