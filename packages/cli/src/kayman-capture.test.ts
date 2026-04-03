@@ -15,7 +15,7 @@ describe('kayman-capture binary', () => {
   })
 })
 
-describe('kayman-capture argument validation', () => {
+describe.skipIf(process.platform !== 'darwin')('kayman-capture argument validation', () => {
   function run(...args: string[]) {
     return spawnSync(BINARY, args, { encoding: 'utf8', timeout: 5000 })
   }
