@@ -197,6 +197,28 @@ describe('runSummarize', () => {
     }
   })
 
+  it('throws PipelineError when AI returns invalid JSON', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ text: 'not {{ valid json' } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const openaiModule = await import('@ai-sdk/openai')
+    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+
+    const { runSummarize } = await import('./summarize')
+
+    await expect(
+      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: mockConfig }),
+    ).rejects.toBeInstanceOf(PipelineError)
+
+    await expect(
+      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: mockConfig }),
+    ).rejects.toThrow('AI returned invalid JSON response')
+  })
+
   it('writes summary.json to recordingDir', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')

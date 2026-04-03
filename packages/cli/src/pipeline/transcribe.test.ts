@@ -107,6 +107,27 @@ describe('runTranscribe', () => {
     ).rejects.toThrow('whisper binary not found at /usr/local/bin/whisper')
   })
 
+  it('throws PipelineError on child process error event', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.existsSync).mockReturnValue(true)
+
+    const cp = await import('child_process')
+    const fakeChild = new EventEmitter() as ReturnType<typeof cp.spawn>
+    vi.mocked(cp.spawn).mockReturnValue(fakeChild)
+
+    const { runTranscribe } = await import('./transcribe')
+    const promise = runTranscribe({
+      audioPath: '/tmp/audio.caf',
+      transcriptDir: '/tmp',
+      config: mockConfig,
+    })
+
+    fakeChild.emit('error', new Error('spawn ENOENT'))
+
+    await expect(promise).rejects.toBeInstanceOf(PipelineError)
+    await expect(promise).rejects.toThrow('spawn ENOENT')
+  })
+
   it('PipelineError has correct stage', async () => {
     const fs = await import('fs')
     vi.mocked(fs.existsSync).mockReturnValue(false)

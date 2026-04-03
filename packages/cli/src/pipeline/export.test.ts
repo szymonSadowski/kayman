@@ -123,6 +123,18 @@ describe('runExport', () => {
     expect(mockCreate).toHaveBeenCalledTimes(2)
   })
 
+  it('throws PipelineError immediately for unknown errors with no status (no retry)', async () => {
+    const { Client } = await import('@notionhq/client')
+    const unknownError = new Error('Network error')
+    const mockCreate = vi.fn().mockRejectedValue(unknownError)
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const { runExport } = await import('./export')
+
+    await expect(runExport({ summary: mockSummary, config: mockConfig })).rejects.toBeInstanceOf(PipelineError)
+    expect(mockCreate).toHaveBeenCalledOnce()
+  })
+
   it('PipelineError on 401 has Exporting stage', async () => {
     const { Client } = await import('@notionhq/client')
     const authError = Object.assign(new Error('Unauthorized'), { status: 401 })
