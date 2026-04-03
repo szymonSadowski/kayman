@@ -6,12 +6,6 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 🔲 Todo
 
-### Epic 2: Audio Recording & Session Management
-
-- [ ] **2.2** Session State Manager
-- [ ] **2.3** `kayman start` — Project Picker & Recording
-- [ ] **2.4** `kayman stop` & `kayman status`
-
 ### Epic 3: Meeting Pipeline — Transcription, Summary & Notion Export
 
 - [ ] **3.1** Notification System
@@ -32,10 +26,6 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 🔄 In Progress
 
-### Epic 2: Audio Recording & Session Management
-
-- [ ] **2.1** Swift Audio Capture Shim — `_bmad-output/implementation-artifacts/2-1-swift-audio-capture-shim.md`
-
 ---
 
 ## ✅ Done
@@ -45,6 +35,13 @@ Update story status by moving it between sections. Each story is designed for a 
 - [x] **1.1** Monorepo Scaffold & Build Tooling
 - [x] **1.2** Shared Package — Types, Paths & Config Loader
 - [x] **1.3** CLI Entry Point, Command Stubs & Exit Codes
+
+### Epic 2: Audio Recording & Session Management
+
+- [x] **2.1** Swift Audio Capture Shim
+- [x] **2.2** Session State Manager
+- [x] **2.3** `kayman start` — Project Picker & Recording
+- [x] **2.4** `kayman stop` & `kayman status`
 
 ---
 
