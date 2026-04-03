@@ -27,7 +27,7 @@ const mockSummary = {
 }
 
 describe('pipeline runner', () => {
-  let exitSpy: ReturnType<typeof vi.spyOn>
+  let exitSpy: { mockRestore(): void; mock: { calls: unknown[][] } }
 
   beforeEach(() => {
     vi.resetModules()
