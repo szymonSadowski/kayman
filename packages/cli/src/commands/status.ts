@@ -1,6 +1,16 @@
+import { readSession } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
-// Implementation: Story 2.4
 export async function statusCommand(_config: Config): Promise<void> {
-  throw new Error('Not yet implemented — Story 2.4')
+  const session = readSession()
+  if (!session) {
+    process.stdout.write('Recording: inactive\n')
+    return
+  }
+
+  const elapsedSec = Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000)
+  const minutes = Math.floor(elapsedSec / 60)
+  const seconds = elapsedSec % 60
+  const label = session.project ?? 'memo'
+  process.stdout.write(`Recording: active — ${label} (duration: ${minutes}m ${seconds}s)\n`)
 }

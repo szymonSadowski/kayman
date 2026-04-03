@@ -12,6 +12,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@inquirer/select": "^5.1.2",
     "@kayman/shared": "workspace:*",
     "commander": "^13.0.0"
   },
