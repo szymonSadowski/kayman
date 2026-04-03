@@ -1,3 +1,5 @@
+import { spawn } from 'child_process'
+import path from 'path'
 import { readSession, clearSession } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
@@ -10,5 +12,16 @@ export async function stopCommand(_config: Config): Promise<void> {
 
   process.kill(session.pid, 'SIGTERM')
   clearSession()
-  process.stdout.write('Pipeline: stub (transcription not yet implemented)\n')
+
+  const pipelineRunnerPath = path.resolve(__dirname, '../pipeline/runner.js')
+  const transcriptSaveDir = path.dirname(session.audioPath)
+
+  const child = spawn(
+    process.execPath,
+    [pipelineRunnerPath, session.audioPath, session.project ?? '', transcriptSaveDir],
+    { detached: true, stdio: 'ignore' },
+  )
+  child.unref()
+
+  process.stdout.write('Recording stopped. Processing in background...\n')
 }
