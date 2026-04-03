@@ -22,7 +22,6 @@ vi.mock('fs', () => ({
 import { readSession, writeSession, recordingDir } from '@kayman/shared'
 import select from '@inquirer/select'
 import { spawn } from 'child_process'
-import fs from 'fs'
 import { startCommand } from './start'
 import { memoCommand } from './memo'
 import type { Config } from '@kayman/shared'
