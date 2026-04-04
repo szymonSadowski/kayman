@@ -17,12 +17,12 @@ const mockConfig: Config = {
   audioSource: 'system_and_mic',
 }
 
-const validAiResponse = JSON.stringify({
+const validAiOutput = {
   title: 'Team Sync Meeting',
   tldr: 'The team discussed project progress.',
   keyPoints: ['Szymon presented the demo', 'Budget was approved', 'Next steps defined'],
   fullSummary: 'Full detailed summary of the meeting.',
-})
+}
 
 describe('runSummarize', () => {
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('runSummarize', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
 
     const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
     const providerModule = await import('./provider')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
@@ -61,7 +61,7 @@ describe('runSummarize', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
 
     const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
     const providerModule = await import('./provider')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
@@ -85,15 +85,15 @@ describe('runSummarize', () => {
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
 
-    const noNameResponse = JSON.stringify({
-      title: 'Meeting',
-      tldr: 'Summary',
-      keyPoints: ['Point A', 'Point B'],
-      fullSummary: 'Full summary.',
-    })
-
     const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: noNameResponse } as Awaited<ReturnType<typeof ai.generateText>>)
+    vi.mocked(ai.generateText).mockResolvedValue({
+      output: {
+        title: 'Meeting',
+        tldr: 'Summary',
+        keyPoints: ['Point A', 'Point B'],
+        fullSummary: 'Full summary.',
+      },
+    } as Awaited<ReturnType<typeof ai.generateText>>)
 
     const providerModule = await import('./provider')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
@@ -114,15 +114,15 @@ describe('runSummarize', () => {
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
 
-    const multiResponse = JSON.stringify({
-      title: 'Meeting',
-      tldr: 'Summary',
-      keyPoints: ['Szymon led the session', 'Action item for Szymon to follow up'],
-      fullSummary: 'Full summary.',
-    })
-
     const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: multiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
+    vi.mocked(ai.generateText).mockResolvedValue({
+      output: {
+        title: 'Meeting',
+        tldr: 'Summary',
+        keyPoints: ['Szymon led the session', 'Action item for Szymon to follow up'],
+        fullSummary: 'Full summary.',
+      },
+    } as Awaited<ReturnType<typeof ai.generateText>>)
 
     const providerModule = await import('./provider')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
@@ -197,35 +197,13 @@ describe('runSummarize', () => {
     }
   })
 
-  it('throws PipelineError when AI returns invalid JSON', async () => {
-    const fs = await import('fs')
-    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
-    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
-
-    const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: 'not {{ valid json' } as Awaited<ReturnType<typeof ai.generateText>>)
-
-    const providerModule = await import('./provider')
-    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
-
-    const { runSummarize } = await import('./summarize')
-
-    await expect(
-      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: mockConfig }),
-    ).rejects.toBeInstanceOf(PipelineError)
-
-    await expect(
-      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: mockConfig }),
-    ).rejects.toThrow('AI returned invalid JSON response')
-  })
-
   it('writes summary.json to recordingDir', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
     const writeFileSyncMock = vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
 
     const ai = await import('ai')
-    vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
     const providerModule = await import('./provider')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)

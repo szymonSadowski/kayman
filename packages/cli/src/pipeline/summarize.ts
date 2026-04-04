@@ -1,20 +1,20 @@
 import fs from 'fs'
 import path from 'path'
-import { generateText } from 'ai'
+import { generateText, Output } from 'ai'
+import { z } from 'zod'
 import { applySpotlight, PipelineError, PipelineStage } from '@kayman/shared'
 import { createProviderModel } from './provider'
 import type { Config, Summary } from '@kayman/shared'
 
-function buildPrompt(transcript: string): string {
-  return `You are a meeting summarizer. Analyze the following transcript and return a JSON object with these exact fields:
-{
-  "title": "A concise meeting title (5-10 words)",
-  "tldr": "A one-paragraph summary of the meeting",
-  "keyPoints": ["Key point 1", "Key point 2", "..."],
-  "fullSummary": "A detailed multi-paragraph summary"
-}
+const summarySchema = z.object({
+  title: z.string(),
+  tldr: z.string(),
+  keyPoints: z.array(z.string()),
+  fullSummary: z.string(),
+})
 
-Return only valid JSON, no other text.
+function buildPrompt(transcript: string): string {
+  return `You are a meeting summarizer. Analyze the following transcript and return a structured summary with: a concise title (5-10 words), a one-paragraph tldr, an array of key points, and a detailed multi-paragraph fullSummary.
 
 Transcript:
 ${transcript}`
@@ -32,20 +32,16 @@ export async function runSummarize(input: {
 
   const model = createProviderModel(config)
 
-  let text: string
+  let parsed: z.infer<typeof summarySchema>
   try {
-    const result = await generateText({ model, prompt: buildPrompt(transcript) })
-    text = result.text
+    const result = await generateText({
+      model,
+      output: Output.object({ schema: summarySchema }),
+      prompt: buildPrompt(transcript),
+    })
+    parsed = result.output
   } catch (err) {
     throw new PipelineError(PipelineStage.Summarizing, (err as Error).message)
-  }
-
-  let parsed: { title: string; tldr: string; keyPoints: string[]; fullSummary: string }
-  try {
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-    parsed = JSON.parse(cleaned) as typeof parsed
-  } catch {
-    throw new PipelineError(PipelineStage.Summarizing, `AI returned invalid JSON response. Raw: ${text.slice(0, 300)}`)
   }
 
   const keyPoints = applySpotlight(parsed.keyPoints, config.userName)

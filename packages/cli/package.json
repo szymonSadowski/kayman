@@ -19,6 +19,7 @@
     "@kayman/shared": "workspace:*",
     "@notionhq/client": "^5.16.0",
     "ai": "^6.0.145",
+    "zod": "^4.3.6",
     "commander": "^13.0.0"
   },
   "devDependencies": {
