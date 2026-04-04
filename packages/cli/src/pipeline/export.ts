@@ -6,6 +6,24 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+const NOTION_TEXT_LIMIT = 2000
+
+function chunkText(text: string): string[] {
+  const chunks: string[] = []
+  for (let i = 0; i < text.length; i += NOTION_TEXT_LIMIT) {
+    chunks.push(text.slice(i, i + NOTION_TEXT_LIMIT))
+  }
+  return chunks
+}
+
+function textBlocks(text: string) {
+  return chunkText(text).map((chunk) => ({
+    object: 'block' as const,
+    type: 'paragraph' as const,
+    paragraph: { rich_text: [{ text: { content: chunk } }] },
+  }))
+}
+
 async function createPage(notion: Client, config: Config, summary: Summary): Promise<string> {
   const matchedProject = summary.project
     ? config.projects.find((p) => p.name === summary.project)
@@ -30,11 +48,7 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
         type: 'heading_2' as const,
         heading_2: { rich_text: [{ text: { content: 'TL;DR' } }] },
       },
-      {
-        object: 'block' as const,
-        type: 'paragraph' as const,
-        paragraph: { rich_text: [{ text: { content: summary.tldr } }] },
-      },
+      ...textBlocks(summary.tldr),
       {
         object: 'block' as const,
         type: 'heading_2' as const,
@@ -43,18 +57,14 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
       ...summary.keyPoints.map((point) => ({
         object: 'block' as const,
         type: 'bulleted_list_item' as const,
-        bulleted_list_item: { rich_text: [{ text: { content: point } }] },
+        bulleted_list_item: { rich_text: [{ text: { content: point.slice(0, NOTION_TEXT_LIMIT) } }] },
       })),
       {
         object: 'block' as const,
         type: 'heading_2' as const,
         heading_2: { rich_text: [{ text: { content: 'Full Summary' } }] },
       },
-      {
-        object: 'block' as const,
-        type: 'paragraph' as const,
-        paragraph: { rich_text: [{ text: { content: summary.fullSummary } }] },
-      },
+      ...textBlocks(summary.fullSummary),
     ],
   })
 
