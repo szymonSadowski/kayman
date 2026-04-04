@@ -7,7 +7,7 @@ import type { Config } from '@kayman/shared'
 
 const DEFAULT_WHISPER_BINARY = '/usr/local/bin/whisper'
 const DEFAULT_WHISPER_MODEL_DIR = path.join(os.homedir(), '.cache', 'whisper')
-const DEFAULT_WHISPER_MODEL_NAME = 'base.en'
+const DEFAULT_WHISPER_MODEL_NAME = 'base'
 
 export async function runTranscribe(input: {
   audioPath: string

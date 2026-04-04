@@ -14,8 +14,22 @@ const summarySchema = z.object({
 })
 
 function buildPrompt(transcript: string): string {
-  return `You are a meeting summarizer. Analyze the following transcript and return a structured summary with: a concise title (5-10 words), a one-paragraph tldr, an array of key points, and a detailed multi-paragraph fullSummary.
+  const wordCount = transcript.split(/\s+/).length
+  const shortTranscript = wordCount < 300
 
+  return `You are an expert summarizer for recorded audio: meetings, conversations, podcasts, lectures, or any spoken content.
+
+Analyze the transcript below and return a structured JSON summary with:
+- title: concise descriptive title (5-10 words) reflecting the actual topic discussed
+- tldr: one-paragraph summary capturing the core message and takeaways
+- keyPoints: array of specific, actionable or informative points discussed (not meta-commentary about recording quality)
+- fullSummary: detailed multi-paragraph summary of everything discussed
+
+Rules:
+- Focus on SUBSTANCE. Extract every piece of information, opinion, recommendation, or fact mentioned.
+- Never describe the transcript itself (e.g. "incomplete recording", "fragmentary dialogue"). Summarize what WAS said.
+- If the transcript is short, still extract all available information rather than commenting on brevity.
+${shortTranscript ? '- The transcript is short so every sentence matters. Include ALL information mentioned.\n' : ''}
 Transcript:
 ${transcript}`
 }
@@ -46,11 +60,16 @@ export async function runSummarize(input: {
 
   const keyPoints = applySpotlight(parsed.keyPoints, config.userName)
 
+  const wordCount = transcript.split(/\s+/).length
+  const fullSummary = wordCount < 300
+    ? `${parsed.fullSummary}\n\n---\n\n**Full Transcript:**\n${transcript}`
+    : parsed.fullSummary
+
   const summary: Summary = {
     title: parsed.title,
     tldr: parsed.tldr,
     keyPoints,
-    fullSummary: parsed.fullSummary,
+    fullSummary,
     project,
     recordedAt: new Date().toISOString(),
     transcriptPath,

@@ -13,7 +13,7 @@ export async function stopCommand(_config: Config): Promise<void> {
   process.kill(session.pid, 'SIGTERM')
   clearSession()
 
-  const pipelineRunnerPath = path.resolve(__dirname, '../pipeline/runner.js')
+  const pipelineRunnerPath = path.resolve(__dirname, './pipeline/runner.js')
   const transcriptSaveDir = path.dirname(session.audioPath)
 
   const child = spawn(
