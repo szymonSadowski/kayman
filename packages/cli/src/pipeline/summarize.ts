@@ -1,8 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import { generateText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
 import { applySpotlight, PipelineError, PipelineStage } from '@kayman/shared'
+import { createProviderModel } from './provider'
 import type { Config, Summary } from '@kayman/shared'
 
 function buildPrompt(transcript: string): string {
@@ -30,8 +30,7 @@ export async function runSummarize(input: {
 
   const transcript = fs.readFileSync(transcriptPath, 'utf8')
 
-  const openai = createOpenAI({ apiKey: config.aiApiKey })
-  const model = openai(config.aiModel)
+  const model = createProviderModel(config)
 
   let text: string
   try {
@@ -43,9 +42,10 @@ export async function runSummarize(input: {
 
   let parsed: { title: string; tldr: string; keyPoints: string[]; fullSummary: string }
   try {
-    parsed = JSON.parse(text) as typeof parsed
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+    parsed = JSON.parse(cleaned) as typeof parsed
   } catch {
-    throw new PipelineError(PipelineStage.Summarizing, 'AI returned invalid JSON response')
+    throw new PipelineError(PipelineStage.Summarizing, `AI returned invalid JSON response. Raw: ${text.slice(0, 300)}`)
   }
 
   const keyPoints = applySpotlight(parsed.keyPoints, config.userName)

@@ -4,7 +4,7 @@ import type { Config } from '@kayman/shared'
 
 vi.mock('fs')
 vi.mock('ai')
-vi.mock('@ai-sdk/openai')
+vi.mock('./provider')
 
 const mockConfig: Config = {
   userName: 'Szymon',
@@ -37,8 +37,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
     const result = await runSummarize({
@@ -63,8 +63,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
     const result = await runSummarize({
@@ -95,8 +95,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: noNameResponse } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
     const result = await runSummarize({
@@ -124,8 +124,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: multiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
     const result = await runSummarize({
@@ -147,8 +147,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockRejectedValue(new Error('Rate limit exceeded'))
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
 
@@ -179,8 +179,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockRejectedValue(new Error('Auth error'))
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
 
@@ -205,8 +205,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: 'not {{ valid json' } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
 
@@ -227,8 +227,8 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ text: validAiResponse } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const openaiModule = await import('@ai-sdk/openai')
-    vi.mocked(openaiModule.createOpenAI).mockReturnValue((() => 'mock-model') as unknown as ReturnType<typeof openaiModule.createOpenAI>)
+    const providerModule = await import('./provider')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
     const { runSummarize } = await import('./summarize')
     await runSummarize({
