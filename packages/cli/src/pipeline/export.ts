@@ -7,6 +7,10 @@ async function sleep(ms: number): Promise<void> {
 }
 
 async function createPage(notion: Client, config: Config, summary: Summary): Promise<string> {
+  const matchedProject = summary.project
+    ? config.projects.find((p) => p.name === summary.project)
+    : undefined
+
   const response = await notion.pages.create({
     parent: { database_id: config.notionDatabaseId },
     properties: {
@@ -16,6 +20,9 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
       Date: {
         date: { start: summary.recordedAt },
       },
+      ...(matchedProject && {
+        Project: { relation: [{ id: matchedProject.notionPageId }] },
+      }),
     },
     children: [
       {
