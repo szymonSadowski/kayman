@@ -7,9 +7,9 @@ async function sleep(ms: number): Promise<void> {
 }
 
 async function createPage(notion: Client, config: Config, summary: Summary): Promise<string> {
-  const project = summary.project
+  const matchedProject = summary.project
     ? config.projects.find((p) => p.name === summary.project)
-    : null
+    : undefined
 
   const response = await notion.pages.create({
     parent: { database_id: config.notionDatabaseId },
@@ -17,19 +17,45 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
       Name: {
         title: [{ text: { content: summary.title } }],
       },
-      'TL;DR': {
-        rich_text: [{ text: { content: summary.tldr } }],
+      Date: {
+        date: { start: summary.recordedAt },
       },
-      'Key Points': {
-        rich_text: [{ text: { content: summary.keyPoints.join('\n') } }],
-      },
-      'Full Summary': {
-        rich_text: [{ text: { content: summary.fullSummary } }],
-      },
-      ...(project
-        ? { Project: { relation: [{ id: project.notionPageId }] } }
-        : {}),
+      ...(matchedProject && {
+        Project: { relation: [{ id: matchedProject.notionPageId }] },
+      }),
     },
+    children: [
+      {
+        object: 'block' as const,
+        type: 'heading_2' as const,
+        heading_2: { rich_text: [{ text: { content: 'TL;DR' } }] },
+      },
+      {
+        object: 'block' as const,
+        type: 'paragraph' as const,
+        paragraph: { rich_text: [{ text: { content: summary.tldr } }] },
+      },
+      {
+        object: 'block' as const,
+        type: 'heading_2' as const,
+        heading_2: { rich_text: [{ text: { content: 'Key Points' } }] },
+      },
+      ...summary.keyPoints.map((point) => ({
+        object: 'block' as const,
+        type: 'bulleted_list_item' as const,
+        bulleted_list_item: { rich_text: [{ text: { content: point } }] },
+      })),
+      {
+        object: 'block' as const,
+        type: 'heading_2' as const,
+        heading_2: { rich_text: [{ text: { content: 'Full Summary' } }] },
+      },
+      {
+        object: 'block' as const,
+        type: 'paragraph' as const,
+        paragraph: { rich_text: [{ text: { content: summary.fullSummary } }] },
+      },
+    ],
   })
 
   return response.id

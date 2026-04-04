@@ -12,11 +12,14 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.66",
+    "@ai-sdk/google": "^3.0.58",
     "@ai-sdk/openai": "^3.0.50",
     "@inquirer/select": "^5.1.2",
     "@kayman/shared": "workspace:*",
     "@notionhq/client": "^5.16.0",
     "ai": "^6.0.145",
+    "zod": "^4.3.6",
     "commander": "^13.0.0"
   },
   "devDependencies": {

@@ -69,6 +69,21 @@ notion_database_id: abc123
     )
   })
 
+  it('throws on unsupported ai_provider value', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: mistral
+ai_model: mistral-7b
+ai_api_key: sk-test
+notion_token: secret
+notion_database_id: abc
+`,
+    )
+    expect(() => loadConfig(configPath)).toThrow('Config error: ai_provider "mistral" is not supported')
+  })
+
   it('throws on invalid audio_source value', () => {
     fs.writeFileSync(
       configPath,

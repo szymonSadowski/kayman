@@ -38,6 +38,13 @@ export function loadConfig(configPath = path.join(CONFIG_DIR, 'config.yaml')): C
     }
   }
 
+  const SUPPORTED_AI_PROVIDERS = ['openai', 'anthropic', 'google']
+  if (!SUPPORTED_AI_PROVIDERS.includes(parsed.ai_provider as string)) {
+    throw new Error(
+      `Config error: ai_provider "${parsed.ai_provider}" is not supported. Supported values: ${SUPPORTED_AI_PROVIDERS.join(', ')}.`,
+    )
+  }
+
   const VALID_AUDIO_SOURCES: Config['audioSource'][] = [
     'system_and_mic',
     'mic_only',
