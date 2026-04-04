@@ -50,7 +50,9 @@ describe('runSummarize', () => {
 
     expect(result.title).toBe('Team Sync Meeting')
     expect(result.tldr).toBe('The team discussed project progress.')
-    expect(result.fullSummary).toBe('Full detailed summary of the meeting.')
+    expect(result.fullSummary).toContain('Full detailed summary of the meeting.')
+    expect(result.fullSummary).toContain('**Full Transcript:**')
+    expect(result.fullSummary).toContain('transcript content')
     expect(result.project).toBe('Kayman')
     expect(result.transcriptPath).toBe('/tmp/audio.txt')
   })
