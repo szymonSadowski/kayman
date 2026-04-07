@@ -14,8 +14,9 @@ import { runTranscribe } from './transcribe'
 import { runSummarize } from './summarize'
 import { runExport } from './export'
 
-const [,, audioPath, projectArg, transcriptSaveDir] = process.argv
+const [,, audioPath, projectArg, transcriptSaveDir, tagsArg] = process.argv
 const project = projectArg === '' ? null : projectArg
+const tags = tagsArg ? tagsArg.split(',') : []
 
 async function run(): Promise<void> {
   const config = loadConfig()
@@ -35,7 +36,10 @@ async function run(): Promise<void> {
     })
 
     notify(PipelineStage.Exporting)
-    await runExport({ summary, config })
+    await runExport({ summary, config, tags })
+
+    // Write .exported marker
+    fs.writeFileSync(path.join(transcriptSaveDir, '.exported'), '', 'utf8')
 
     notify(PipelineStage.Done)
 

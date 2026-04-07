@@ -16,9 +16,11 @@ export async function stopCommand(_config: Config): Promise<void> {
   const pipelineRunnerPath = path.resolve(__dirname, './pipeline/runner.js')
   const transcriptSaveDir = path.dirname(session.audioPath)
 
+  const tagsArg = session.tags.length > 0 ? session.tags.join(',') : ''
+
   const child = spawn(
     process.execPath,
-    [pipelineRunnerPath, session.audioPath, session.project ?? '', transcriptSaveDir],
+    [pipelineRunnerPath, session.audioPath, session.project ?? '', transcriptSaveDir, tagsArg],
     { detached: true, stdio: 'ignore' },
   )
   child.unref()

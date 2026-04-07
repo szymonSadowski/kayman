@@ -4,7 +4,7 @@ import type { Config } from '@kayman/shared'
 
 vi.mock('fs')
 vi.mock('ai')
-vi.mock('./provider')
+vi.mock('./provider.js')
 
 const mockConfig: Config = {
   userName: 'Szymon',
@@ -37,10 +37,10 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
     const result = await runSummarize({
       transcriptPath: '/tmp/audio.txt',
       project: 'Kayman',
@@ -65,10 +65,10 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
     const result = await runSummarize({
       transcriptPath: '/tmp/audio.txt',
       project: null,
@@ -97,10 +97,10 @@ describe('runSummarize', () => {
       },
     } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
     const result = await runSummarize({
       transcriptPath: '/tmp/audio.txt',
       project: null,
@@ -126,10 +126,10 @@ describe('runSummarize', () => {
       },
     } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
     const result = await runSummarize({
       transcriptPath: '/tmp/audio.txt',
       project: null,
@@ -149,10 +149,10 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockRejectedValue(new Error('Rate limit exceeded'))
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
 
     await expect(
       runSummarize({
@@ -181,10 +181,10 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockRejectedValue(new Error('Auth error'))
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
 
     try {
       await runSummarize({
@@ -207,10 +207,10 @@ describe('runSummarize', () => {
     const ai = await import('ai')
     vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
 
-    const providerModule = await import('./provider')
+    const providerModule = await import('./provider.js')
     vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
 
-    const { runSummarize } = await import('./summarize')
+    const { runSummarize } = await import('./summarize.js')
     await runSummarize({
       transcriptPath: '/tmp/recordings/audio.txt',
       project: 'Kayman',

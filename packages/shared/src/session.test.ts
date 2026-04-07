@@ -33,6 +33,7 @@ const MOCK_SESSION: Session = {
   audioPath: '/tmp/audio.caf',
   project: 'Kayman',
   startedAt: new Date().toISOString(),
+  tags: [],
 }
 
 describe('session', () => {
@@ -99,6 +100,19 @@ describe('session', () => {
     fs.writeFileSync(testSessionPath, JSON.stringify({ pid: 'not-a-number' }), 'utf8')
     expect(readSession()).toBeNull()
     expect(fs.existsSync(testSessionPath)).toBe(false)
+  })
+
+  it('writeSession + readSession round-trips with tags', () => {
+    const withTags: Session = { ...MOCK_SESSION, tags: ['daily', 'voc'] }
+    writeSession(withTags)
+    expect(readSession()).toEqual(withTags)
+  })
+
+  it('readSession returns null for session missing tags field', () => {
+    fs.mkdirSync(path.dirname(testSessionPath), { recursive: true })
+    const noTags = { pid: process.pid, audioPath: '/tmp/a.caf', project: null, startedAt: new Date().toISOString() }
+    fs.writeFileSync(testSessionPath, JSON.stringify(noTags), 'utf8')
+    expect(readSession()).toBeNull()
   })
 
   afterAll(() => {
