@@ -89,6 +89,26 @@ describe('startCommand', () => {
     exitSpy.mockRestore()
   })
 
+  it('passes tags to writeSession when provided', async () => {
+    ;(readSession as Mock).mockReturnValue(null)
+
+    await startCommand('Project A', mockConfig, ['daily', 'voc'])
+
+    expect(writeSession).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: ['daily', 'voc'] }),
+    )
+  })
+
+  it('defaults tags to empty array when not provided', async () => {
+    ;(readSession as Mock).mockReturnValue(null)
+
+    await startCommand('Project A', mockConfig)
+
+    expect(writeSession).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: [] }),
+    )
+  })
+
   it('errors if no projects configured and no arg', async () => {
     ;(readSession as Mock).mockReturnValue(null)
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })

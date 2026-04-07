@@ -7,6 +7,9 @@ import { stopCommand } from './commands/stop'
 import { lastCommand } from './commands/last'
 import { memoCommand } from './commands/memo'
 import { statusCommand } from './commands/status'
+import { listCommand } from './commands/list'
+import { retryCommand } from './commands/retry'
+import { verifyCommand } from './commands/verify'
 
 const program = new Command()
   .name('kayman')
@@ -15,8 +18,9 @@ const program = new Command()
 
 let config: Config
 
-// Validate config before every command
-program.hook('preAction', () => {
+// Validate config before every command (except verify which handles its own config)
+program.hook('preAction', (_thisCommand, actionCommand) => {
+  if (actionCommand.name() === 'verify') return
   try {
     config = loadConfig()
   } catch (err) {
@@ -28,8 +32,9 @@ program.hook('preAction', () => {
 program
   .command('start [project]')
   .description('Start a recording session')
-  .action(async (project?: string) => {
-    await startCommand(project, config)
+  .option('--tags <tags...>', 'Tags for the recording session')
+  .action(async (project: string | undefined, opts: { tags?: string[] }) => {
+    await startCommand(project, config, opts.tags ?? [])
   })
 
 program
@@ -58,6 +63,33 @@ program
   .description('Check whether a recording is active')
   .action(async () => {
     await statusCommand(config)
+  })
+
+program
+  .command('list')
+  .description('List past meeting recordings')
+  .option('--project <name>', 'Filter by project name')
+  .option('--from <date>', 'Show recordings from this date (YYYY-MM-DD)')
+  .option('--to <date>', 'Show recordings up to this date (YYYY-MM-DD)')
+  .option('--tag <tag...>', 'Filter by tag (AND logic)')
+  .action(async (opts: { project?: string; from?: string; to?: string; tag?: string[] }) => {
+    await listCommand(config, opts)
+  })
+
+program
+  .command('retry')
+  .description('Re-export failed Notion exports')
+  .option('--path <dir>', 'Retry export for a specific recording directory')
+  .option('--all', 'Retry all failed exports')
+  .action(async (opts: { path?: string; all?: boolean }) => {
+    await retryCommand(config, opts)
+  })
+
+program
+  .command('verify')
+  .description('Validate kayman setup and dependencies')
+  .action(async () => {
+    await verifyCommand(config)
   })
 
 program.parse()

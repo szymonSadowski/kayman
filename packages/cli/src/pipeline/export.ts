@@ -24,7 +24,7 @@ function textBlocks(text: string) {
   }))
 }
 
-async function createPage(notion: Client, config: Config, summary: Summary): Promise<string> {
+async function createPage(notion: Client, config: Config, summary: Summary, tags: string[] = []): Promise<string> {
   const matchedProject = summary.project
     ? config.projects.find((p) => p.name === summary.project)
     : undefined
@@ -40,6 +40,9 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
       },
       ...(matchedProject && {
         Project: { relation: [{ id: matchedProject.notionPageId }] },
+      }),
+      ...(tags.length > 0 && {
+        Tags: { multi_select: tags.map((t) => ({ name: t })) },
       }),
     },
     children: [
@@ -71,15 +74,15 @@ async function createPage(notion: Client, config: Config, summary: Summary): Pro
   return response.id
 }
 
-export async function runExport(input: { summary: Summary; config: Config }): Promise<string> {
-  const { summary, config } = input
+export async function runExport(input: { summary: Summary; config: Config; tags?: string[] }): Promise<string> {
+  const { summary, config, tags = [] } = input
 
   const notion = new Client({ auth: config.notionToken })
 
   let lastErr: Error | undefined
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await createPage(notion, config, summary)
+      return await createPage(notion, config, summary, tags)
     } catch (err) {
       const status = (err as { status?: number }).status
 

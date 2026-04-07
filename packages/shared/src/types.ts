@@ -34,6 +34,7 @@ export interface Session {
   audioPath: string
   project: string | null
   startedAt: string
+  tags: string[]
 }
 
 export interface Summary {

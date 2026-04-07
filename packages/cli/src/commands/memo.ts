@@ -23,6 +23,6 @@ export async function memoCommand(config: Config): Promise<void> {
   })
   child.unref()
 
-  writeSession({ pid: child.pid!, audioPath, project: null, startedAt: new Date().toISOString() })
+  writeSession({ pid: child.pid!, audioPath, project: null, startedAt: new Date().toISOString(), tags: [] })
   process.stdout.write('Recording started.\n')
 }

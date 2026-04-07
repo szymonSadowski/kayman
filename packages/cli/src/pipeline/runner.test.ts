@@ -67,6 +67,11 @@ describe('pipeline runner', () => {
       expect.stringContaining('summaryPath'),
       'utf8',
     )
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      '/tmp/recordings/.exported',
+      '',
+      'utf8',
+    )
     expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/audio.caf')
     expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/recordings/audio.txt')
     expect(exitSpy).not.toHaveBeenCalled()

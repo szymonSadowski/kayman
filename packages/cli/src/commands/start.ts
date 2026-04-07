@@ -10,6 +10,7 @@ const CAPTURE_BIN = path.resolve(__dirname, '../bin/kayman-capture')
 export async function startCommand(
   project: string | undefined,
   config: Config,
+  tags: string[] = [],
 ): Promise<void> {
   const existing = readSession()
   if (existing) {
@@ -41,6 +42,6 @@ export async function startCommand(
   })
   child.unref()
 
-  writeSession({ pid: child.pid!, audioPath, project: resolvedProject, startedAt: new Date().toISOString() })
+  writeSession({ pid: child.pid!, audioPath, project: resolvedProject, startedAt: new Date().toISOString(), tags })
   process.stdout.write('Recording started.\n')
 }
