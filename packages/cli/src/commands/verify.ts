@@ -3,7 +3,7 @@ import { loadConfig } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { Client } from '@notionhq/client'
 import { generateText } from 'ai'
-import { createProviderModel } from '../pipeline/provider'
+import { createProviderModel } from '../pipeline/provider.js'
 
 interface CheckResult {
   name: string

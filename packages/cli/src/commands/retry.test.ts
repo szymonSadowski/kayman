@@ -20,12 +20,12 @@ vi.mock('@kayman/shared', async (importOriginal) => {
   }
 })
 
-vi.mock('../pipeline/export', () => ({
+vi.mock('../pipeline/export.js', () => ({
   runExport: vi.fn(),
 }))
 
-import { retryCommand } from './retry'
-import { runExport } from '../pipeline/export'
+import { retryCommand } from './retry.js'
+import { runExport } from '../pipeline/export.js'
 import type { Config, Summary } from '@kayman/shared'
 
 const mockConfig: Config = {

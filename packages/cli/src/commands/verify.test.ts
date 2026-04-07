@@ -13,16 +13,16 @@ vi.mock('@notionhq/client')
 vi.mock('ai', () => ({
   generateText: vi.fn(),
 }))
-vi.mock('../pipeline/provider', () => ({
+vi.mock('../pipeline/provider.js', () => ({
   createProviderModel: vi.fn(),
 }))
 
 import { loadConfig } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
-import { verifyCommand } from './verify'
+import { verifyCommand } from './verify.js'
 import { Client } from '@notionhq/client'
 import { generateText } from 'ai'
-import { createProviderModel } from '../pipeline/provider'
+import { createProviderModel } from '../pipeline/provider.js'
 
 const mockConfig: Config = {
   userName: 'Test',

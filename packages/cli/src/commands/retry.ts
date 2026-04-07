@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { DATA_DIR, notify, notifyError, PipelineStage } from '@kayman/shared'
 import type { Config, Summary } from '@kayman/shared'
-import { runExport } from '../pipeline/export'
+import { runExport } from '../pipeline/export.js'
 
 interface RetryOptions {
   path?: string

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('fs')
-vi.mock('./transcribe')
-vi.mock('./summarize')
-vi.mock('./export')
+vi.mock('./transcribe.js')
+vi.mock('./summarize.js')
+vi.mock('./export.js')
 vi.mock('@kayman/shared', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@kayman/shared')>()
   return {
@@ -42,9 +42,9 @@ describe('pipeline runner', () => {
 
   it('happy path: notifies all stages, writes pointer, cleans up audio and transcript', async () => {
     const shared = await import('@kayman/shared')
-    const { runTranscribe } = await import('./transcribe')
-    const { runSummarize } = await import('./summarize')
-    const { runExport } = await import('./export')
+    const { runTranscribe } = await import('./transcribe.js')
+    const { runSummarize } = await import('./summarize.js')
+    const { runExport } = await import('./export.js')
     const fs = await import('fs')
 
     vi.mocked(shared.loadConfig).mockReturnValue({} as never)
@@ -55,7 +55,7 @@ describe('pipeline runner', () => {
     vi.mocked(fs.writeFileSync).mockReturnValue(undefined)
     vi.mocked(fs.unlinkSync).mockReturnValue(undefined)
 
-    await import('./runner')
+    await import('./runner.js')
     await flush()
 
     expect(shared.notify).toHaveBeenCalledWith(shared.PipelineStage.Transcribing)
@@ -79,13 +79,13 @@ describe('pipeline runner', () => {
 
   it('notifyError with transcribe stage and exits 1 on transcribe PipelineError', async () => {
     const shared = await import('@kayman/shared')
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     vi.mocked(shared.loadConfig).mockReturnValue({} as never)
     const err = new shared.PipelineError(shared.PipelineStage.Transcribing, 'whisper not found')
     vi.mocked(runTranscribe).mockRejectedValue(err)
 
-    await import('./runner')
+    await import('./runner.js')
     await flush()
 
     expect(shared.notifyError).toHaveBeenCalledWith(shared.PipelineStage.Transcribing, err, undefined)
@@ -94,15 +94,15 @@ describe('pipeline runner', () => {
 
   it('notifyError with summarize stage and transcript path on summarize PipelineError', async () => {
     const shared = await import('@kayman/shared')
-    const { runTranscribe } = await import('./transcribe')
-    const { runSummarize } = await import('./summarize')
+    const { runTranscribe } = await import('./transcribe.js')
+    const { runSummarize } = await import('./summarize.js')
 
     vi.mocked(shared.loadConfig).mockReturnValue({} as never)
     vi.mocked(runTranscribe).mockResolvedValue('/tmp/recordings/audio.txt')
     const err = new shared.PipelineError(shared.PipelineStage.Summarizing, 'AI error')
     vi.mocked(runSummarize).mockRejectedValue(err)
 
-    await import('./runner')
+    await import('./runner.js')
     await flush()
 
     expect(shared.notifyError).toHaveBeenCalledWith(
@@ -115,13 +115,13 @@ describe('pipeline runner', () => {
 
   it('uses Transcribing stage for unknown (non-PipelineError) errors', async () => {
     const shared = await import('@kayman/shared')
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     vi.mocked(shared.loadConfig).mockReturnValue({} as never)
     const unknownErr = new Error('Something unexpected')
     vi.mocked(runTranscribe).mockRejectedValue(unknownErr)
 
-    await import('./runner')
+    await import('./runner.js')
     await flush()
 
     expect(shared.notifyError).toHaveBeenCalledWith(
@@ -136,9 +136,9 @@ describe('pipeline runner', () => {
     process.argv = ['node', 'runner.js', '/tmp/audio.caf', '', '/tmp/recordings']
 
     const shared = await import('@kayman/shared')
-    const { runTranscribe } = await import('./transcribe')
-    const { runSummarize } = await import('./summarize')
-    const { runExport } = await import('./export')
+    const { runTranscribe } = await import('./transcribe.js')
+    const { runSummarize } = await import('./summarize.js')
+    const { runExport } = await import('./export.js')
     const fs = await import('fs')
 
     vi.mocked(shared.loadConfig).mockReturnValue({} as never)
@@ -149,7 +149,7 @@ describe('pipeline runner', () => {
     vi.mocked(fs.writeFileSync).mockReturnValue(undefined)
     vi.mocked(fs.unlinkSync).mockReturnValue(undefined)
 
-    await import('./runner')
+    await import('./runner.js')
     await flush()
 
     const summarizeCall = vi.mocked(runSummarize).mock.calls.at(-1)![0]

@@ -10,7 +10,7 @@ vi.mock('@kayman/shared', () => ({
 vi.mock('child_process')
 
 import { readSession, clearSession } from '@kayman/shared'
-import { stopCommand } from './stop'
+import { stopCommand } from './stop.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig = {} as Config

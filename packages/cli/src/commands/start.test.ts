@@ -20,10 +20,11 @@ vi.mock('fs', () => ({
 }))
 
 import { readSession, writeSession, recordingDir } from '@kayman/shared'
+// @ts-expect-error vitest mock handles ESM-only module
 import select from '@inquirer/select'
 import { spawn } from 'child_process'
-import { startCommand } from './start'
-import { memoCommand } from './memo'
+import { startCommand } from './start.js'
+import { memoCommand } from './memo.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig: Config = {

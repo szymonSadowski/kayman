@@ -13,7 +13,7 @@ vi.mock('@kayman/shared', () => ({
   DATA_DIR: testDataDir,
 }))
 
-import { listCommand } from './list'
+import { listCommand } from './list.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig = {} as Config

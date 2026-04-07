@@ -28,7 +28,7 @@ describe('createProviderModel', () => {
     const mockClient = vi.fn().mockReturnValue(mockModel)
     vi.mocked(createOpenAI).mockReturnValue(mockClient as unknown as ReturnType<typeof createOpenAI>)
 
-    const { createProviderModel } = await import('./provider')
+    const { createProviderModel } = await import('./provider.js')
     const result = createProviderModel({ ...baseConfig, aiProvider: 'openai' })
 
     expect(createOpenAI).toHaveBeenCalledWith({ apiKey: 'test-key' })
@@ -42,7 +42,7 @@ describe('createProviderModel', () => {
     const mockClient = vi.fn().mockReturnValue(mockModel)
     vi.mocked(createAnthropic).mockReturnValue(mockClient as unknown as ReturnType<typeof createAnthropic>)
 
-    const { createProviderModel } = await import('./provider')
+    const { createProviderModel } = await import('./provider.js')
     const result = createProviderModel({ ...baseConfig, aiProvider: 'anthropic' })
 
     expect(createAnthropic).toHaveBeenCalledWith({ apiKey: 'test-key' })
@@ -56,7 +56,7 @@ describe('createProviderModel', () => {
     const mockClient = vi.fn().mockReturnValue(mockModel)
     vi.mocked(createGoogleGenerativeAI).mockReturnValue(mockClient as unknown as ReturnType<typeof createGoogleGenerativeAI>)
 
-    const { createProviderModel } = await import('./provider')
+    const { createProviderModel } = await import('./provider.js')
     const result = createProviderModel({ ...baseConfig, aiProvider: 'google' })
 
     expect(createGoogleGenerativeAI).toHaveBeenCalledWith({ apiKey: 'test-key' })
@@ -65,7 +65,7 @@ describe('createProviderModel', () => {
   })
 
   it('throws PipelineError with Summarizing stage for unsupported provider', async () => {
-    const { createProviderModel } = await import('./provider')
+    const { createProviderModel } = await import('./provider.js')
 
     expect(() => createProviderModel({ ...baseConfig, aiProvider: 'mistral' })).toThrow(PipelineError)
     expect(() => createProviderModel({ ...baseConfig, aiProvider: 'mistral' })).toThrow('mistral')
@@ -78,7 +78,7 @@ describe('createProviderModel', () => {
   })
 
   it('error message for unsupported provider lists supported providers', async () => {
-    const { createProviderModel } = await import('./provider')
+    const { createProviderModel } = await import('./provider.js')
 
     expect(() => createProviderModel({ ...baseConfig, aiProvider: 'mistral' })).toThrow(
       'openai, anthropic, google',
