@@ -52,7 +52,7 @@ async function checkAiProvider(config: Config): Promise<CheckResult> {
       await generateText({
         model,
         prompt: 'Reply with OK',
-        maxTokens: 1,
+        maxOutputTokens: 1,
         abortSignal: controller.signal,
       })
     } finally {
