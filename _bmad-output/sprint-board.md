@@ -8,11 +8,10 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ### Epic 3: Meeting Pipeline — Transcription, Summary & Notion Export
 
-- [ ] **3.1** Notification System
-- [ ] **3.2** Transcription Stage
-- [ ] **3.3** AI Summarization & Personal Spotlight
-- [ ] **3.4** Notion Export Stage
-- [ ] **3.5** Pipeline Runner & `kayman stop` Integration
+- [ ] **3.6** Session Tags & Notion Tag Export
+- [ ] **3.7** `kayman list` — Browse Past Meetings
+- [ ] **3.8** `kayman retry` — Re-export Failed Notion Exports
+- [ ] **3.9** `kayman verify` — Health Check / Setup Validation
 
 ### Epic 4: Summary Access & Raycast Integration
 
@@ -21,6 +20,23 @@ Update story status by moving it between sections. Each story is designed for a 
 - [ ] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status
 - [ ] **4.4** Menu Bar Recording Indicator
 - [ ] **4.5** Shell Tab Completion
+
+### Epic 5: Error Handling & CLI UX
+
+- [ ] **5.1** CLI Output Styling & Branding
+- [ ] **5.2** Audio Capture Failure Recovery
+- [ ] **5.3** Early Validation — Fail Fast on Missing Dependencies
+- [ ] **5.4** Per-Project AI Prompt Templates
+- [ ] **5.5** `kayman help` — Interactive Command Guide
+
+### Epic 6: Local-First Mode & CLI Config
+
+- [ ] **6.1** Ollama Provider Support
+- [ ] **6.2** Local Whisper Model Management
+- [ ] **6.3** Offline-Ready Pipeline
+- [ ] **6.4** Ollama Auto-Pull
+- [ ] **6.5** `kayman config` — CLI Config Editor
+- [ ] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle
 
 ---
 
@@ -42,6 +58,14 @@ Update story status by moving it between sections. Each story is designed for a 
 - [x] **2.2** Session State Manager
 - [x] **2.3** `kayman start` — Project Picker & Recording
 - [x] **2.4** `kayman stop` & `kayman status`
+
+### Epic 3: Meeting Pipeline — Transcription, Summary & Notion Export
+
+- [x] **3.1** Notification System
+- [x] **3.2** Transcription Stage
+- [x] **3.3** AI Summarization & Personal Spotlight
+- [x] **3.4** Notion Export Stage
+- [x] **3.5** Pipeline Runner & `kayman stop` Integration
 
 ---
 
