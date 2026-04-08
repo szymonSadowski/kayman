@@ -29,7 +29,7 @@ describe('runTranscribe', () => {
     const fs = await import('fs')
     vi.mocked(fs.existsSync).mockImplementation((p) => p !== '/usr/local/bin/whisper')
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     await expect(
       runTranscribe({ audioPath: '/tmp/audio.caf', transcriptDir: '/tmp', config: mockConfig }),
@@ -44,7 +44,7 @@ describe('runTranscribe', () => {
     const fs = await import('fs')
     vi.mocked(fs.existsSync).mockImplementation((p) => p !== '/models/ggml-base.en.bin')
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     await expect(
       runTranscribe({ audioPath: '/tmp/audio.caf', transcriptDir: '/tmp', config: mockConfig }),
@@ -59,7 +59,7 @@ describe('runTranscribe', () => {
     const fakeChild = new EventEmitter() as ReturnType<typeof cp.spawn>
     vi.mocked(cp.spawn).mockReturnValue(fakeChild)
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
     const promise = runTranscribe({
       audioPath: '/tmp/audio.caf',
       transcriptDir: '/tmp',
@@ -80,7 +80,7 @@ describe('runTranscribe', () => {
     const fakeChild = new EventEmitter() as ReturnType<typeof cp.spawn>
     vi.mocked(cp.spawn).mockReturnValue(fakeChild)
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
     const promise = runTranscribe({
       audioPath: '/tmp/recordings/audio.caf',
       transcriptDir: '/tmp/recordings',
@@ -100,7 +100,7 @@ describe('runTranscribe', () => {
     const existsSyncMock = vi.mocked(fs.existsSync)
     existsSyncMock.mockReturnValue(false)
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     await expect(
       runTranscribe({ audioPath: '/tmp/audio.caf', transcriptDir: '/tmp', config: configWithoutPaths }),
@@ -115,7 +115,7 @@ describe('runTranscribe', () => {
     const fakeChild = new EventEmitter() as ReturnType<typeof cp.spawn>
     vi.mocked(cp.spawn).mockReturnValue(fakeChild)
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
     const promise = runTranscribe({
       audioPath: '/tmp/audio.caf',
       transcriptDir: '/tmp',
@@ -132,7 +132,7 @@ describe('runTranscribe', () => {
     const fs = await import('fs')
     vi.mocked(fs.existsSync).mockReturnValue(false)
 
-    const { runTranscribe } = await import('./transcribe')
+    const { runTranscribe } = await import('./transcribe.js')
 
     try {
       await runTranscribe({ audioPath: '/tmp/audio.caf', transcriptDir: '/tmp', config: mockConfig })

@@ -41,7 +41,7 @@ describe('runExport', () => {
     const mockCreate = vi.fn().mockResolvedValue({ id: 'new-page-id' })
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
     const result = await runExport({ summary: mockSummary, config: mockConfig })
 
     expect(result).toBe('new-page-id')
@@ -53,7 +53,7 @@ describe('runExport', () => {
     const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
     await runExport({ summary: mockSummary, config: mockConfig })
 
     const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
@@ -67,7 +67,7 @@ describe('runExport', () => {
 
     const memoSummary: Summary = { ...mockSummary, project: null }
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
     await runExport({ summary: memoSummary, config: mockConfig })
 
     const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
@@ -80,7 +80,7 @@ describe('runExport', () => {
     const mockCreate = vi.fn().mockRejectedValue(authError)
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
 
     await expect(runExport({ summary: mockSummary, config: mockConfig })).rejects.toThrow(
       'Notion auth failed: check notion_token in config',
@@ -94,7 +94,7 @@ describe('runExport', () => {
     const mockCreate = vi.fn().mockRejectedValue(rateLimitError)
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
 
     let caught: unknown
     try {
@@ -116,7 +116,7 @@ describe('runExport', () => {
       .mockResolvedValueOnce({ id: 'page-after-retry' })
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
 
     const result = await runExport({ summary: mockSummary, config: mockConfig })
     expect(result).toBe('page-after-retry')
@@ -129,7 +129,7 @@ describe('runExport', () => {
     const mockCreate = vi.fn().mockRejectedValue(unknownError)
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
 
     await expect(runExport({ summary: mockSummary, config: mockConfig })).rejects.toBeInstanceOf(PipelineError)
     expect(mockCreate).toHaveBeenCalledOnce()
@@ -140,7 +140,7 @@ describe('runExport', () => {
     const authError = Object.assign(new Error('Unauthorized'), { status: 401 })
     vi.mocked(Client).mockImplementation(() => ({ pages: { create: vi.fn().mockRejectedValue(authError) } }) as unknown as InstanceType<typeof Client>)
 
-    const { runExport } = await import('./export')
+    const { runExport } = await import('./export.js')
 
     try {
       await runExport({ summary: mockSummary, config: mockConfig })

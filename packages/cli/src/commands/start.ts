@@ -1,7 +1,6 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import select from '@inquirer/select'
 import { readSession, writeSession, recordingDir } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
@@ -25,6 +24,7 @@ export async function startCommand(
       process.stderr.write('No projects configured. Add projects to ~/.config/kayman/config.yaml\n')
       process.exit(1)
     }
+    const { default: select } = await import('@inquirer/select')
     resolvedProject = await select({
       message: 'Select a project:',
       choices: config.projects.map(p => ({ name: p.name, value: p.name })),

@@ -1,6 +1,6 @@
 # Story 4.1: `kayman last` — Terminal Summary Access
 
-Status: review
+Status: done
 
 ## Story
 

@@ -118,6 +118,21 @@ describe('lastCommand', () => {
     expect(exitSpy).toHaveBeenCalledWith(1)
   })
 
+  it('writes stderr and exits 1 on non-ENOENT pointer read error', async () => {
+    fs.writeFileSync(testLastSummaryPath, JSON.stringify({ summaryPath: '/any' }), 'utf8')
+    fs.chmodSync(testLastSummaryPath, 0o000)
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    try {
+      await expect(lastCommand(mockConfig)).rejects.toThrow('exit')
+      expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('failed to read'))
+      expect(exitSpy).toHaveBeenCalledWith(1)
+    } finally {
+      fs.chmodSync(testLastSummaryPath, 0o644)
+      exitSpy.mockRestore()
+    }
+  })
+
   it('renders project as "memo" when summary.project is null', async () => {
     const memoSummary: Summary = { ...mockSummary, project: null, title: 'Quick Note' }
     const summaryPath = writeSummary('summary-memo.json', memoSummary)
