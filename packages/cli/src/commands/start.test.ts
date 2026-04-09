@@ -22,8 +22,8 @@ vi.mock('fs', () => ({
 
 import { readSession, writeSession, recordingDir } from '@kayman/shared'
 import { spawn } from 'child_process'
-import { startCommand } from './start'
-import { memoCommand } from './memo'
+import { startCommand } from './start.js'
+import { memoCommand } from './memo.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig: Config = {
@@ -87,6 +87,26 @@ describe('startCommand', () => {
     await expect(startCommand(undefined, mockConfig)).rejects.toThrow('exit')
     expect(process.stderr.write).toHaveBeenCalledWith('Recording already in progress. Run kayman stop first.\n')
     exitSpy.mockRestore()
+  })
+
+  it('passes tags to writeSession when provided', async () => {
+    ;(readSession as Mock).mockReturnValue(null)
+
+    await startCommand('Project A', mockConfig, ['daily', 'voc'])
+
+    expect(writeSession).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: ['daily', 'voc'] }),
+    )
+  })
+
+  it('defaults tags to empty array when not provided', async () => {
+    ;(readSession as Mock).mockReturnValue(null)
+
+    await startCommand('Project A', mockConfig)
+
+    expect(writeSession).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: [] }),
+    )
   })
 
   it('errors if no projects configured and no arg', async () => {

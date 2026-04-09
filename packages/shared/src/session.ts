@@ -21,7 +21,9 @@ function isValidSession(obj: unknown): obj is Session {
     typeof s.audioPath === 'string' &&
     s.audioPath.length > 0 &&
     (s.project === null || typeof s.project === 'string') &&
-    typeof s.startedAt === 'string'
+    typeof s.startedAt === 'string' &&
+    Array.isArray(s.tags) &&
+    s.tags.every((t: unknown) => typeof t === 'string')
   )
 }
 

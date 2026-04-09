@@ -6,7 +6,7 @@ vi.mock('@kayman/shared', () => ({
 }))
 
 import { readSession } from '@kayman/shared'
-import { statusCommand } from './status'
+import { statusCommand } from './status.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig = {} as Config

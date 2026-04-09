@@ -4,7 +4,7 @@ import type { Config } from '@kayman/shared'
 
 vi.mock('fs')
 vi.mock('ai')
-vi.mock('./provider')
+vi.mock('./provider.js')
 
 const mockConfig: Config = {
   userName: 'Szymon',

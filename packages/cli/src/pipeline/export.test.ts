@@ -74,6 +74,30 @@ describe('runExport', () => {
     expect(callArg.properties['Project']).toBeUndefined()
   })
 
+  it('includes Tags multi-select property when tags provided', async () => {
+    const { Client } = await import('@notionhq/client')
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const { runExport } = await import('./export.js')
+    await runExport({ summary: mockSummary, config: mockConfig, tags: ['daily', 'voc'] })
+
+    const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
+    expect(callArg.properties['Tags']).toEqual({ multi_select: [{ name: 'daily' }, { name: 'voc' }] })
+  })
+
+  it('omits Tags property when tags is empty', async () => {
+    const { Client } = await import('@notionhq/client')
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const { runExport } = await import('./export.js')
+    await runExport({ summary: mockSummary, config: mockConfig, tags: [] })
+
+    const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
+    expect(callArg.properties['Tags']).toBeUndefined()
+  })
+
   it('throws PipelineError immediately on 401 without retry', async () => {
     const { Client } = await import('@notionhq/client')
     const authError = Object.assign(new Error('Unauthorized'), { status: 401 })

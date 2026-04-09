@@ -10,7 +10,7 @@ vi.mock('@kayman/shared', () => ({
 vi.mock('child_process')
 
 import { readSession, clearSession } from '@kayman/shared'
-import { stopCommand } from './stop'
+import { stopCommand } from './stop.js'
 import type { Config } from '@kayman/shared'
 
 const mockConfig = {} as Config
@@ -20,6 +20,7 @@ const mockSession = {
   audioPath: '/tmp/recordings/2026-04-03-kayman/audio.caf',
   project: 'Kayman',
   startedAt: new Date().toISOString(),
+  tags: [] as string[],
 }
 
 beforeEach(() => {
@@ -64,6 +65,35 @@ describe('stopCommand', () => {
 
     const spawnArgs = vi.mocked(cp.spawn).mock.calls[0][1] as string[]
     expect(spawnArgs[2]).toBe('')
+  })
+
+  it('passes tags as comma-separated arg to runner', async () => {
+    const tagSession = { ...mockSession, tags: ['daily', 'voc'] }
+    ;(readSession as Mock).mockReturnValue(tagSession)
+    vi.spyOn(process, 'kill').mockImplementation(() => true)
+
+    const cp = await import('child_process')
+    const fakeChild = Object.assign(new (await import('events')).EventEmitter(), { unref: vi.fn() })
+    vi.mocked(cp.spawn).mockReturnValue(fakeChild as unknown as ReturnType<typeof cp.spawn>)
+
+    await stopCommand(mockConfig)
+
+    const spawnArgs = vi.mocked(cp.spawn).mock.calls[0][1] as string[]
+    expect(spawnArgs[4]).toBe('daily,voc')
+  })
+
+  it('passes empty string for tags when no tags', async () => {
+    ;(readSession as Mock).mockReturnValue(mockSession)
+    vi.spyOn(process, 'kill').mockImplementation(() => true)
+
+    const cp = await import('child_process')
+    const fakeChild = Object.assign(new (await import('events')).EventEmitter(), { unref: vi.fn() })
+    vi.mocked(cp.spawn).mockReturnValue(fakeChild as unknown as ReturnType<typeof cp.spawn>)
+
+    await stopCommand(mockConfig)
+
+    const spawnArgs = vi.mocked(cp.spawn).mock.calls[0][1] as string[]
+    expect(spawnArgs[4]).toBe('')
   })
 
   it('errors when no active session', async () => {

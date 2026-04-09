@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('fs')
-vi.mock('./transcribe')
-vi.mock('./summarize')
-vi.mock('./export')
+vi.mock('./transcribe.js')
+vi.mock('./summarize.js')
+vi.mock('./export.js')
 vi.mock('@kayman/shared', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@kayman/shared')>()
   return {
@@ -65,6 +65,11 @@ describe('pipeline runner', () => {
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       shared.LAST_SUMMARY_PATH,
       expect.stringContaining('summaryPath'),
+      'utf8',
+    )
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      '/tmp/recordings/.exported',
+      '',
       'utf8',
     )
     expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/audio.caf')
