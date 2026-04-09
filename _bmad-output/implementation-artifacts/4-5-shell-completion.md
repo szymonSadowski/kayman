@@ -1,6 +1,6 @@
 # Story 4.5: Shell Tab Completion
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -28,28 +28,28 @@ so that I never have to type project names in full (FR30).
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `packages/cli/src/completion/completion.ts` (AC: 1, 2, 3, 4)
-  - [ ] Export `completionCommand(args: string[]): Promise<void>` — handles two modes:
+- [x] Task 1: Create `packages/cli/src/completion/completion.ts` (AC: 1, 2, 3, 4)
+  - [x] Export `completionCommand(args: string[]): Promise<void>` — handles two modes:
     - `kayman completion script [zsh|bash]` → prints the static completion script
     - `kayman completion projects` → reads `loadConfig()` and prints project names, one per line (consumed by the script)
     - `kayman completion install` → prints sourcing instructions
-- [ ] Task 2: Add the completion script as a string constant (AC: 1, 2, 4)
-  - [ ] zsh version using `compdef` and `_kayman` function
-  - [ ] bash version using `complete -F _kayman kayman`
-  - [ ] Both call `kayman completion projects` at completion time (live, no cache)
-  - [ ] Both handle the subcommand list inline (no CLI roundtrip needed for that)
-- [ ] Task 3: Wire `completion` subcommand into `packages/cli/src/index.ts` (AC: 5)
-  - [ ] Register `program.command('completion [action] [shell]')` calling `completionCommand`
-  - [ ] Add to `preAction` skip list alongside `verify` — completion script generation MUST work without a valid config (so users can install completion before configuring kayman)
-- [ ] Task 4: Add tests `packages/cli/src/completion/completion.test.ts` (AC: 1, 2, 3, 4, 5)
-  - [ ] `completion projects` with mocked config → prints project names line-separated
-  - [ ] `completion projects` with no config file → prints nothing, exits 0 (graceful degrade — completion shouldn't error mid-tab)
-  - [ ] `completion projects` with config but zero projects → prints nothing, exits 0
-  - [ ] `completion script zsh` → contains `compdef _kayman kayman` and `kayman completion projects`
-  - [ ] `completion script bash` → contains `complete -F _kayman kayman`
-  - [ ] `completion install` → prints both zsh and bash sourcing instructions
-- [ ] Task 5: Document install in README (AC: 5)
-  - [ ] Brief section: "Tab Completion" with the two install lines (one for zsh, one for bash)
+- [x] Task 2: Add the completion script as a string constant (AC: 1, 2, 4)
+  - [x] zsh version using `compdef` and `_kayman` function
+  - [x] bash version using `complete -F _kayman kayman`
+  - [x] Both call `kayman completion projects` at completion time (live, no cache)
+  - [x] Both handle the subcommand list inline (no CLI roundtrip needed for that)
+- [x] Task 3: Wire `completion` subcommand into `packages/cli/src/index.ts` (AC: 5)
+  - [x] Register `program.command('completion [action] [shell]')` calling `completionCommand`
+  - [x] Add to `preAction` skip list alongside `verify` — completion script generation MUST work without a valid config (so users can install completion before configuring kayman)
+- [x] Task 4: Add tests `packages/cli/src/completion/completion.test.ts` (AC: 1, 2, 3, 4, 5)
+  - [x] `completion projects` with mocked config → prints project names line-separated
+  - [x] `completion projects` with no config file → prints nothing, exits 0 (graceful degrade — completion shouldn't error mid-tab)
+  - [x] `completion projects` with config but zero projects → prints nothing, exits 0
+  - [x] `completion script zsh` → contains `compdef _kayman kayman` and `kayman completion projects`
+  - [x] `completion script bash` → contains `complete -F _kayman kayman`
+  - [x] `completion install` → prints both zsh and bash sourcing instructions
+- [x] Task 5: Document install in README (AC: 5)
+  - [x] Brief section: "Tab Completion" with the two install lines (one for zsh, one for bash)
 
 ## Dev Notes
 
@@ -261,6 +261,26 @@ kayman start <TAB>
 - [Source: packages/shared/src/config.ts] — `loadConfig()` for project enumeration
 - [Source: _bmad-output/implementation-artifacts/epic-3-retro-2026-04-08.md#T1] — "minimize external deps" guidance
 
+## Senior Developer Review (AI)
+
+**Reviewer:** Szymonsadowski | **Date:** 2026-04-09
+
+### Findings Fixed
+
+- **H1** — AC 2 (case-insensitive): zsh now uses `compadd -M 'm:{a-zA-Z}={A-Za-z}'` instead of `_describe`; bash manually lowercases both input and project names for prefix comparison. No user opt-in required.
+- **H2** — Removed `list`, `retry`, `verify` from both completion scripts — commands not yet registered in `index.ts`.
+- **M1** — Bash completion rewritten to use `while IFS= read -r` loop (bash 3.2 compatible, space-safe) instead of `compgen -W "$projects"`.
+- **M2** — Removed unused `prev` variable from bash script.
+- **M3** — Added test for `completionCommand(['script'])` with no shell arg (falls to stderr + exit 1).
+- **L3** — Added `expect(exitSpy).not.toHaveBeenCalled()` assertion to the "exits 0" test.
+
+### Remaining Notes (Low / Won't Fix)
+
+- **L1** — `packages/cli/src/commands/verify.ts` referenced in Dev Notes doesn't exist; it's a future story.
+- **L2** — Section title "Why Project Matching is Case-Insensitive" is now moot (matching is case-insensitive); section can be cleaned up in a future pass.
+
+**Outcome:** Approved — all High and Medium issues resolved, 71 tests pass.
+
 ## Dev Agent Record
 
 ### Agent Model Used
@@ -271,4 +291,19 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- Created `packages/cli/src/completion/completion.ts` with `completionCommand`, ZSH_SCRIPT, and BASH_SCRIPT constants
+- Wired `completion` command into `packages/cli/src/index.ts` with preAction skip so it works without a valid config
+- Added 9 unit tests covering all ACs: projects output, graceful degrade (no config, empty projects), script sentinel strings, install instructions, unknown action error
+- Created root `README.md` with Tab Completion install section including zsh/bash copy-paste lines and notes on case-sensitivity and bash 3.2 compatibility
+- All 70 tests pass, typecheck and lint clean
+
 ### File List
+
+- `packages/cli/src/completion/completion.ts` (new)
+- `packages/cli/src/completion/completion.test.ts` (new)
+- `packages/cli/src/index.ts` (modified — added completion import, preAction skip, completion command)
+- `README.md` (new)
+
+## Change Log
+
+- 2026-04-09: Implemented story 4.5 — shell tab completion for zsh and bash (9 tests, no new deps)

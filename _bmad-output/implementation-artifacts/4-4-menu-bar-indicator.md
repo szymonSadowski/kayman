@@ -1,6 +1,6 @@
 # Story 4.4: Menu Bar Recording Indicator
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -28,18 +28,18 @@ so that I can confirm recording is running without switching windows (FR28).
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement `menu-bar.tsx` with polling (AC: 1, 2, 3)
-  - [ ] Use `MenuBarExtra` from `@raycast/api`
-  - [ ] Poll `readSession()` from `@kayman/shared` every 1000ms via `setInterval` inside `useEffect`
-  - [ ] Compute elapsed seconds → `MM:SS` (zero-padded)
-  - [ ] Active title: `⏺ ${MM}:${SS}` ; inactive title: `⏺ kayman`
-  - [ ] Clear interval on unmount
-- [ ] Task 2: Add `MenuBarExtra.Item` actions (AC: 4, 5)
-  - [ ] When active: show `MenuBarExtra.Item title="Stop Recording"` calling `runKayman(['stop'])` then `showToast` on success/error
-  - [ ] When active: show `MenuBarExtra.Item title="Project: <name>"` (display only, no action) for context
-  - [ ] When inactive: show `MenuBarExtra.Item title="No active recording"` (display only)
-- [ ] Task 3: Verify `package.json` declares `menu-bar` command with `mode: "menu-bar"` (AC: 1)
-  - [ ] Already declared per current `packages/raycast/package.json` — verify only
+- [x] Task 1: Implement `menu-bar.tsx` with polling (AC: 1, 2, 3)
+  - [x] Use `MenuBarExtra` from `@raycast/api`
+  - [x] Poll `readSession()` from `@kayman/shared` every 1000ms via `setInterval` inside `useEffect`
+  - [x] Compute elapsed seconds → `MM:SS` (zero-padded)
+  - [x] Active title: `⏺ ${MM}:${SS}` ; inactive title: `⏺ kayman`
+  - [x] Clear interval on unmount
+- [x] Task 2: Add `MenuBarExtra.Item` actions (AC: 4, 5)
+  - [x] When active: show `MenuBarExtra.Item title="Stop Recording"` calling `runKayman(['stop'])` then `showToast` on success/error
+  - [x] When active: show `MenuBarExtra.Item title="Project: <name>"` (display only, no action) for context
+  - [x] When inactive: show `MenuBarExtra.Item title="No active recording"` (display only)
+- [x] Task 3: Verify `package.json` declares `menu-bar` command with `mode: "menu-bar"` (AC: 1)
+  - [x] Already declared per current `packages/raycast/package.json` — verify only
 - [ ] Task 4: Manual smoke test the full lifecycle (AC: 1–5)
   - [ ] `pnpm dev` (Raycast dev mode)
   - [ ] Enable menu-bar extra in Raycast preferences
@@ -191,4 +191,21 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- Implemented `menu-bar.tsx` replacing the stub. Uses `useEffect`+`setInterval` at 1Hz polling `readSession()`. Active state shows `⏺ MM:SS` title with Stop Recording and Show Status actions; inactive shows `⏺ kayman` with "No active recording" item.
+- Task 3 verified: `packages/raycast/package.json` already declares `menu-bar` command with `mode: "menu-bar"` — no changes needed.
+- No unit tests (Raycast `MenuBarExtra` runtime cannot be mocked — per Dev Notes testing standards).
+- TypeScript typecheck and ESLint both pass with zero errors.
+- **Manual test plan (Task 4 — requires Raycast dev mode):**
+  - [ ] AC1: Active → title shows `⏺ 00:01`, `⏺ 00:02`, … incrementing each second
+  - [ ] AC2: Inactive → title shows `⏺ kayman`, dropdown shows "No active recording"
+  - [ ] AC3: After `kayman stop`, title returns to `⏺ kayman` within 1–2s
+  - [ ] AC4: Click "Stop Recording" → `kayman stop` runs, success toast appears
+  - [ ] AC5: Click "Show Status" → status command launches (or silently fails if disabled)
+
 ### File List
+
+- packages/raycast/src/menu-bar.tsx (modified — replaced stub with full polling implementation)
+
+## Change Log
+
+- 2026-04-09: Implemented Story 4.4 — menu-bar polling indicator with 1Hz readSession(), MM:SS title, Stop Recording and Show Status actions.
