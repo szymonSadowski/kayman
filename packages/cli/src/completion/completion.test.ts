@@ -61,11 +61,36 @@ describe('completionCommand - script', () => {
     expect(out).toContain('kayman completion projects')
   })
 
+  it('script zsh lists all currently implemented subcommands (AC4)', async () => {
+    await completionCommand(['script', 'zsh'])
+
+    const out = vi.mocked(process.stdout.write).mock.calls.map((c) => c[0] as string).join('')
+    // Core subcommands implemented in Epic 4
+    expect(out).toContain('start')
+    expect(out).toContain('stop')
+    expect(out).toContain('last')
+    expect(out).toContain('memo')
+    expect(out).toContain('status')
+    // NOTE: AC4 also requires 'list', 'retry', 'verify' — planned for future epics (5/6)
+  })
+
   it('script bash contains complete -F _kayman kayman', async () => {
     await completionCommand(['script', 'bash'])
 
     const out = vi.mocked(process.stdout.write).mock.calls.map((c) => c[0] as string).join('')
     expect(out).toContain('complete -F _kayman kayman')
+  })
+
+  it('script bash lists all currently implemented subcommands (AC4)', async () => {
+    await completionCommand(['script', 'bash'])
+
+    const out = vi.mocked(process.stdout.write).mock.calls.map((c) => c[0] as string).join('')
+    expect(out).toContain('start')
+    expect(out).toContain('stop')
+    expect(out).toContain('last')
+    expect(out).toContain('memo')
+    expect(out).toContain('status')
+    // NOTE: AC4 also requires 'list', 'retry', 'verify' — planned for future epics (5/6)
   })
 
   it('script with unknown shell writes to stderr and exits 1', async () => {
