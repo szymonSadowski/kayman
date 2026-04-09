@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { DATA_DIR } from '@kayman/shared'
+import { DATA_DIR, info, bold, dim } from '@kayman/shared'
 import type { Config, Summary } from '@kayman/shared'
 
 interface ListOptions {
@@ -64,7 +64,7 @@ export async function listCommand(_config: Config, opts: ListOptions): Promise<v
   let recordings = loadRecordings()
 
   if (recordings.length === 0) {
-    process.stdout.write('No recordings found.\n')
+    process.stdout.write(info('No recordings found.') + '\n')
     return
   }
 
@@ -89,16 +89,18 @@ export async function listCommand(_config: Config, opts: ListOptions): Promise<v
   }
 
   if (recordings.length === 0) {
-    if (opts.project) {
-      process.stdout.write(`No recordings found for project "${opts.project}".\n`)
-    } else {
-      process.stdout.write('No recordings found.\n')
-    }
+    const filters: string[] = []
+    if (opts.project) filters.push(`project "${opts.project}"`)
+    if (opts.from) filters.push(`from ${opts.from}`)
+    if (opts.to) filters.push(`to ${opts.to}`)
+    if (opts.tag && opts.tag.length > 0) filters.push(`tags [${opts.tag.join(', ')}]`)
+    const suffix = filters.length > 0 ? ` matching ${filters.join(', ')}` : ''
+    process.stdout.write(info(`No recordings found${suffix}.`) + '\n')
     return
   }
 
   for (const r of recordings) {
     const tagsStr = r.tags.length > 0 ? ` [${r.tags.join(', ')}]` : ''
-    process.stdout.write(`${r.date}  ${r.project}  ${r.title}${tagsStr}\n`)
+    process.stdout.write(`${dim(r.date)}  ${bold(r.project)}  ${r.title}${tagsStr}\n`)
   }
 }

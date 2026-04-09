@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { readSession, writeSession, recordingDir } from '@kayman/shared'
+import { readSession, writeSession, recordingDir, success, error } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
 const CAPTURE_BIN = path.resolve(__dirname, '../bin/kayman-capture')
@@ -9,7 +9,7 @@ const CAPTURE_BIN = path.resolve(__dirname, '../bin/kayman-capture')
 export async function memoCommand(config: Config): Promise<void> {
   const existing = readSession()
   if (existing) {
-    process.stderr.write('Recording already in progress. Run kayman stop first.\n')
+    process.stderr.write(error('Recording already in progress. Run kayman stop first.') + '\n')
     process.exit(1)
   }
 
@@ -24,5 +24,5 @@ export async function memoCommand(config: Config): Promise<void> {
   child.unref()
 
   writeSession({ pid: child.pid!, audioPath, project: null, startedAt: new Date().toISOString(), tags: [] })
-  process.stdout.write('Recording started.\n')
+  process.stdout.write(success('Recording started.') + '\n')
 }

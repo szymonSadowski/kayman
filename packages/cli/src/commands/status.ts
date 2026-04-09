@@ -1,10 +1,12 @@
-import { readSession } from '@kayman/shared'
+import { readSession, info, bold, dim } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
+
+const isTTY = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR
 
 export async function statusCommand(_config: Config): Promise<void> {
   const session = readSession()
   if (!session) {
-    process.stdout.write('Recording: inactive\n')
+    process.stdout.write(info('Recording: inactive') + '\n')
     return
   }
 
@@ -12,5 +14,6 @@ export async function statusCommand(_config: Config): Promise<void> {
   const minutes = Math.floor(elapsedSec / 60)
   const seconds = elapsedSec % 60
   const label = session.project ?? 'memo'
-  process.stdout.write(`Recording: active — ${label} (duration: ${minutes}m ${seconds}s)\n`)
+  const recPrefix = isTTY ? '⏺ ' : '[rec] '
+  process.stdout.write(`${recPrefix}${bold(label)} — ${dim(`${minutes}m ${seconds}s`)}\n`)
 }

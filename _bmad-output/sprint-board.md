@@ -6,12 +6,9 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 📝 Ready for Dev
 
-### Epic 4: Summary Access & Raycast Integration
+### Epic 5: Error Handling & CLI UX
 
-- [ ] **4.2** Raycast Extension Scaffold & Command Stubs — [spec](implementation-artifacts/4-2-raycast-scaffold.md)
-- [ ] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status — [spec](implementation-artifacts/4-3-raycast-commands.md)
-- [ ] **4.4** Menu Bar Recording Indicator — [spec](implementation-artifacts/4-4-menu-bar-indicator.md)
-- [ ] **4.5** Shell Tab Completion — [spec](implementation-artifacts/4-5-shell-completion.md)
+- [ ] **5.1** CLI Output Styling & Branding — [spec](implementation-artifacts/5-1-cli-output-styling-and-branding.md)
 
 ---
 
@@ -19,7 +16,6 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ### Epic 5: Error Handling & CLI UX
 
-- [ ] **5.1** CLI Output Styling & Branding
 - [ ] **5.2** Audio Capture Failure Recovery
 - [ ] **5.3** Early Validation — Fail Fast on Missing Dependencies
 - [ ] **5.4** Per-Project AI Prompt Templates
@@ -38,9 +34,7 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 🔄 In Progress
 
-### Epic 4: Summary Access & Raycast Integration
-
-- [ ] **4.1** `kayman last` — Terminal Summary Access (status: review) — [spec](implementation-artifacts/4-1-kayman-last.md)
+_(none)_
 
 ---
 
@@ -70,6 +64,14 @@ Update story status by moving it between sections. Each story is designed for a 
 - [x] **3.7** `kayman list` — Browse Past Meetings
 - [x] **3.8** `kayman retry` — Re-export Failed Notion Exports
 - [x] **3.9** `kayman verify` — Health Check / Setup Validation
+
+### Epic 4: Summary Access & Raycast Integration
+
+- [x] **4.1** `kayman last` — Terminal Summary Access — [spec](implementation-artifacts/4-1-kayman-last.md)
+- [x] **4.2** Raycast Extension Scaffold & Command Stubs — [spec](implementation-artifacts/4-2-raycast-scaffold.md)
+- [x] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status — [spec](implementation-artifacts/4-3-raycast-commands.md)
+- [x] **4.4** Menu Bar Recording Indicator — [spec](implementation-artifacts/4-4-menu-bar-indicator.md)
+- [x] **4.5** Shell Tab Completion — [spec](implementation-artifacts/4-5-shell-completion.md)
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { loadConfig } from '@kayman/shared'
+import { loadConfig, error } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { startCommand } from './commands/start'
 import { stopCommand } from './commands/stop'
@@ -25,7 +25,7 @@ program.hook('preAction', (_thisCommand, actionCommand) => {
   try {
     config = loadConfig()
   } catch (err) {
-    process.stderr.write((err as Error).message + '\n')
+    process.stderr.write(error((err as Error).message) + '\n')
     process.exit(1)
   }
 })
