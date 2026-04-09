@@ -4,22 +4,18 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ---
 
-## 🔲 Todo
-
-### Epic 3: Meeting Pipeline — Transcription, Summary & Notion Export
-
-- [ ] **3.6** Session Tags & Notion Tag Export
-- [ ] **3.7** `kayman list` — Browse Past Meetings
-- [ ] **3.8** `kayman retry` — Re-export Failed Notion Exports
-- [ ] **3.9** `kayman verify` — Health Check / Setup Validation
+## 📝 Ready for Dev
 
 ### Epic 4: Summary Access & Raycast Integration
 
-- [ ] **4.1** `kayman last` — Terminal Summary Access
-- [ ] **4.2** Raycast Extension Scaffold & Command Stubs
-- [ ] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status
-- [ ] **4.4** Menu Bar Recording Indicator
-- [ ] **4.5** Shell Tab Completion
+- [ ] **4.2** Raycast Extension Scaffold & Command Stubs — [spec](implementation-artifacts/4-2-raycast-scaffold.md)
+- [ ] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status — [spec](implementation-artifacts/4-3-raycast-commands.md)
+- [ ] **4.4** Menu Bar Recording Indicator — [spec](implementation-artifacts/4-4-menu-bar-indicator.md)
+- [ ] **4.5** Shell Tab Completion — [spec](implementation-artifacts/4-5-shell-completion.md)
+
+---
+
+## 🔲 Todo
 
 ### Epic 5: Error Handling & CLI UX
 
@@ -41,6 +37,10 @@ Update story status by moving it between sections. Each story is designed for a 
 ---
 
 ## 🔄 In Progress
+
+### Epic 4: Summary Access & Raycast Integration
+
+- [ ] **4.1** `kayman last` — Terminal Summary Access (status: review) — [spec](implementation-artifacts/4-1-kayman-last.md)
 
 ---
 
@@ -66,6 +66,10 @@ Update story status by moving it between sections. Each story is designed for a 
 - [x] **3.3** AI Summarization & Personal Spotlight
 - [x] **3.4** Notion Export Stage
 - [x] **3.5** Pipeline Runner & `kayman stop` Integration
+- [x] **3.6** Session Tags & Notion Tag Export
+- [x] **3.7** `kayman list` — Browse Past Meetings
+- [x] **3.8** `kayman retry` — Re-export Failed Notion Exports
+- [x] **3.9** `kayman verify` — Health Check / Setup Validation
 
 ---
 

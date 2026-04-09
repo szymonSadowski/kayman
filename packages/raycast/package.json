@@ -45,7 +45,7 @@
     }
   ],
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "ray build",
     "dev": "ray develop",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"

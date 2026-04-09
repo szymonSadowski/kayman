@@ -25,7 +25,7 @@ export async function startCommand(
       process.stderr.write('No projects configured. Add projects to ~/.config/kayman/config.yaml\n')
       process.exit(1)
     }
-    const { default: select } = await (import('@inquirer/select') as Promise<{ default: (opts: { message: string; choices: { name: string; value: string }[] }) => Promise<string> }>)
+    const { default: select } = await import('@inquirer/select')
     resolvedProject = await select({
       message: 'Select a project:',
       choices: config.projects.map(p => ({ name: p.name, value: p.name })),

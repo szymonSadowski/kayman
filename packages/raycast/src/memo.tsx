@@ -1,6 +1,11 @@
 import { showToast, Toast } from '@raycast/api'
+import { runKayman, showKaymanError } from './lib/cli'
 
-// Implementation: Story 4.3
 export default async function Memo() {
-  await showToast({ style: Toast.Style.Failure, title: 'Not yet implemented (Story 4.3)' })
+  try {
+    await runKayman(['memo'])
+    await showToast({ style: Toast.Style.Success, title: 'Memo recording started' })
+  } catch (err) {
+    await showKaymanError(err)
+  }
 }

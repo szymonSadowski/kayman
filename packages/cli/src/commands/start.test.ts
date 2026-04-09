@@ -7,8 +7,9 @@ vi.mock('@kayman/shared', () => ({
   recordingDir: vi.fn(() => '/tmp/recordings/2026-01-01-test'),
 }))
 
+const selectMock = vi.hoisted(() => vi.fn())
 vi.mock('@inquirer/select', () => ({
-  default: vi.fn(),
+  default: selectMock,
 }))
 
 vi.mock('child_process', () => ({
@@ -20,8 +21,6 @@ vi.mock('fs', () => ({
 }))
 
 import { readSession, writeSession, recordingDir } from '@kayman/shared'
-// @ts-expect-error vitest mock handles ESM-only module
-import select from '@inquirer/select'
 import { spawn } from 'child_process'
 import { startCommand } from './start.js'
 import { memoCommand } from './memo.js'
@@ -71,11 +70,11 @@ describe('startCommand', () => {
 
   it('shows picker when no project arg given', async () => {
     ;(readSession as Mock).mockReturnValue(null)
-    ;(select as Mock).mockResolvedValue('Project B')
+    selectMock.mockResolvedValue('Project B')
 
     await startCommand(undefined, mockConfig)
 
-    expect(select).toHaveBeenCalled()
+    expect(selectMock).toHaveBeenCalled()
     expect(writeSession).toHaveBeenCalledWith(
       expect.objectContaining({ project: 'Project B' }),
     )
@@ -126,7 +125,7 @@ describe('memoCommand', () => {
 
     await memoCommand(mockConfig)
 
-    expect(select).not.toHaveBeenCalled()
+    expect(selectMock).not.toHaveBeenCalled()
     expect(writeSession).toHaveBeenCalledWith(
       expect.objectContaining({ pid: 12345, project: null }),
     )

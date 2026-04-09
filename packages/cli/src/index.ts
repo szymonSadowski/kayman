@@ -7,6 +7,7 @@ import { stopCommand } from './commands/stop'
 import { lastCommand } from './commands/last'
 import { memoCommand } from './commands/memo'
 import { statusCommand } from './commands/status'
+import { completionCommand } from './completion/completion'
 import { listCommand } from './commands/list'
 import { retryCommand } from './commands/retry'
 import { verifyCommand } from './commands/verify'
@@ -18,9 +19,9 @@ const program = new Command()
 
 let config: Config
 
-// Validate config before every command (except verify which handles its own config)
+// Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (actionCommand.name() === 'verify') return
+  if (actionCommand.name() === 'completion' || actionCommand.name() === 'verify') return
   try {
     config = loadConfig()
   } catch (err) {
@@ -63,6 +64,13 @@ program
   .description('Check whether a recording is active')
   .action(async () => {
     await statusCommand(config)
+  })
+
+program
+  .command('completion [action] [shell]')
+  .description('Shell completion helpers (run "kayman completion install" for setup)')
+  .action(async (action: string | undefined, shell: string | undefined) => {
+    await completionCommand([action, shell].filter((x): x is string => Boolean(x)))
   })
 
 program
