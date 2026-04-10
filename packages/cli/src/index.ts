@@ -11,17 +11,25 @@ import { completionCommand } from './completion/completion'
 import { listCommand } from './commands/list'
 import { retryCommand } from './commands/retry'
 import { verifyCommand } from './commands/verify'
+import { helpCommand } from './commands/help'
 
 const program = new Command()
   .name('kayman')
   .description('Meeting recording and AI summary tool')
   .version('0.0.1')
+  .addHelpCommand(false)
+  .helpOption(false)
+
+program.option('-h, --help', 'Show help')
+program.on('option:help', () => {
+  helpCommand().then(() => process.exit(0))
+})
 
 let config: Config
 
 // Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (actionCommand.name() === 'completion' || actionCommand.name() === 'verify') return
+  if (['completion', 'verify', 'help'].includes(actionCommand.name())) return
   try {
     config = loadConfig()
   } catch (err) {
@@ -101,5 +109,16 @@ program
   .action(async () => {
     await verifyCommand(config)
   })
+
+program
+  .command('help [command]')
+  .description('Show command help')
+  .action(async (cmd?: string) => {
+    await helpCommand(cmd)
+  })
+
+program.action(async () => {
+  await helpCommand()
+})
 
 program.parse()
