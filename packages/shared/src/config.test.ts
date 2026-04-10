@@ -115,4 +115,66 @@ notion_database_id: abc
     const config = loadConfig(configPath)
     expect(config.audioSource).toBe('system_and_mic')
   })
+
+  it('parses empty string prompt_template to empty string (not undefined)', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: openai
+ai_model: gpt-4o
+ai_api_key: sk-test
+notion_token: secret
+notion_database_id: abc
+projects:
+  - name: Standup
+    notion_page_id: page-1
+    prompt_template: ""
+`,
+    )
+    const config = loadConfig(configPath)
+    expect(config.projects[0].promptTemplate).toBe('')
+  })
+
+  it('throws on non-string prompt_template value', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: openai
+ai_model: gpt-4o
+ai_api_key: sk-test
+notion_token: secret
+notion_database_id: abc
+projects:
+  - name: Standup
+    notion_page_id: page-1
+    prompt_template: 42
+`,
+    )
+    expect(() => loadConfig(configPath)).toThrow('Config error: prompt_template must be a string')
+  })
+
+  it('parses prompt_template in project to promptTemplate', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: openai
+ai_model: gpt-4o
+ai_api_key: sk-test
+notion_token: secret
+notion_database_id: abc
+projects:
+  - name: Standup
+    notion_page_id: page-1
+    prompt_template: "Summarize the standup."
+  - name: Client
+    notion_page_id: page-2
+`,
+    )
+    const config = loadConfig(configPath)
+    expect(config.projects[0].promptTemplate).toBe('Summarize the standup.')
+    expect(config.projects[1].promptTemplate).toBeUndefined()
+  })
 })

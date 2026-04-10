@@ -23,7 +23,7 @@ export interface Config {
   aiApiKey: string
   notionToken: string
   notionDatabaseId: string
-  projects: Array<{ name: string; notionPageId: string }>
+  projects: Array<{ name: string; notionPageId: string; promptTemplate?: string }>
   audioSource: 'system_and_mic' | 'mic_only' | 'system_only'
   whisperBinaryPath?: string
   whisperModelPath?: string
