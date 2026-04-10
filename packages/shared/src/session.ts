@@ -34,6 +34,20 @@ export function writeSession(session: Session): void {
   fs.writeFileSync(SESSION_PATH, JSON.stringify(session, null, 2), 'utf8')
 }
 
+export function readSessionFile(): Session | null {
+  let raw: string
+  try {
+    raw = fs.readFileSync(SESSION_PATH, 'utf8')
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null
+    throw err
+  }
+  let parsed: unknown
+  try { parsed = JSON.parse(raw) } catch { return null }
+  if (!isValidSession(parsed)) return null
+  return parsed
+}
+
 export function readSession(): Session | null {
   let raw: string
   try {

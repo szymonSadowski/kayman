@@ -1,10 +1,17 @@
-import { readSession, info, bold, dim } from '@kayman/shared'
+import { readSessionFile, isProcessAlive, clearSession, notifyCustom, info, warn, bold, dim, isTTY } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
-const isTTY = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR
-
 export async function statusCommand(_config: Config): Promise<void> {
-  const session = readSession()
+  const raw = readSessionFile()
+
+  if (raw && !isProcessAlive(raw.pid)) {
+    clearSession()
+    notifyCustom('Recording lost: capture process exited unexpectedly.')
+    process.stdout.write(warn('Recording: inactive (capture process died unexpectedly)') + '\n')
+    return
+  }
+
+  const session = raw
   if (!session) {
     process.stdout.write(info('Recording: inactive') + '\n')
     return

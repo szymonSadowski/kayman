@@ -45,7 +45,7 @@ export async function runTranscribe(input: {
 
     child.on('close', (code) => {
       if (code !== 0) {
-        reject(new PipelineError(PipelineStage.Transcribing, `whisper exited with code ${code}`))
+        reject(new PipelineError(PipelineStage.Transcribing, 'Transcription failed: audio file may be corrupted or too short.'))
       } else {
         resolve()
       }

@@ -1,6 +1,6 @@
 import pc from 'picocolors'
 
-const isTTY = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR
+export const isTTY = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR
 
 export function success(msg: string): string {
   return isTTY ? pc.green(`✓ ${msg}`) : `[ok] ${msg}`

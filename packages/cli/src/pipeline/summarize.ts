@@ -44,6 +44,21 @@ export async function runSummarize(input: {
 
   const transcript = fs.readFileSync(transcriptPath, 'utf8')
 
+  if (!transcript.trim()) {
+    const summary: Summary = {
+      title: 'Empty Recording',
+      tldr: 'No speech detected in this recording.',
+      keyPoints: [],
+      fullSummary: 'No speech was detected in this recording. The audio may have been silent or the microphone was disconnected.',
+      project,
+      recordedAt: new Date().toISOString(),
+      transcriptPath,
+    }
+    const summaryPath = path.join(recordingDir, 'summary.json')
+    fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8')
+    return summary
+  }
+
   const model = createProviderModel(config)
 
   let parsed: z.infer<typeof summarySchema>

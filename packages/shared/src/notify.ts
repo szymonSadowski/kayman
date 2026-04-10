@@ -16,6 +16,10 @@ export function notify(stage: PipelineStage): void {
   })
 }
 
+export function notifyCustom(message: string): void {
+  notifier.notify({ title: 'kayman', message })
+}
+
 export function notifyError(
   stage: PipelineStage,
   err: Error,

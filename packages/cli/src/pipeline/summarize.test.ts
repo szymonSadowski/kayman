@@ -199,6 +199,45 @@ describe('runSummarize', () => {
     }
   })
 
+  it('returns hardcoded Empty Recording summary for empty transcript', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => '   ')
+    const writeFileSyncMock = vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({
+      transcriptPath: '/tmp/audio.txt',
+      project: 'Kayman',
+      recordingDir: '/tmp',
+      config: mockConfig,
+    })
+
+    expect(result.title).toBe('Empty Recording')
+    expect(result.tldr).toBe('No speech detected in this recording.')
+    expect(result.keyPoints).toEqual([])
+    expect(result.fullSummary).toContain('No speech was detected')
+    expect(result.project).toBe('Kayman')
+    expect(writeFileSyncMock).toHaveBeenCalledWith('/tmp/summary.json', expect.any(String), 'utf8')
+  })
+
+  it('does not call AI for empty transcript', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => '')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({
+      transcriptPath: '/tmp/audio.txt',
+      project: null,
+      recordingDir: '/tmp',
+      config: mockConfig,
+    })
+
+    expect(ai.generateText).not.toHaveBeenCalled()
+  })
+
   it('writes summary.json to recordingDir', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')

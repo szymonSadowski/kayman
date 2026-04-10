@@ -68,7 +68,7 @@ describe('runTranscribe', () => {
 
     fakeChild.emit('close', 1)
 
-    await expect(promise).rejects.toThrow('whisper exited with code 1')
+    await expect(promise).rejects.toThrow('Transcription failed: audio file may be corrupted or too short.')
     await expect(promise).rejects.toBeInstanceOf(PipelineError)
   })
 

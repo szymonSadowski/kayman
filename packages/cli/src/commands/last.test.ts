@@ -15,6 +15,10 @@ const { testDataDir, testLastSummaryPath } = vi.hoisted(() => {
 
 vi.mock('@kayman/shared', () => ({
   LAST_SUMMARY_PATH: testLastSummaryPath,
+  info: (s: string) => s,
+  error: (s: string) => s,
+  bold: (s: string) => s,
+  dim: (s: string) => s,
 }))
 
 import { lastCommand } from './last.js'

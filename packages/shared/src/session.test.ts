@@ -25,7 +25,7 @@ vi.mock('./paths', () => ({
     path.join(os.tmpdir(), 'kayman-test-data', 'recordings', `${date}-${project ?? 'memo'}`),
 }))
 
-import { writeSession, readSession, clearSession } from './session'
+import { writeSession, readSession, readSessionFile, clearSession } from './session'
 import type { Session } from './types'
 
 const MOCK_SESSION: Session = {
@@ -106,6 +106,31 @@ describe('session', () => {
     const withTags: Session = { ...MOCK_SESSION, tags: ['daily', 'voc'] }
     writeSession(withTags)
     expect(readSession()).toEqual(withTags)
+  })
+
+  it('readSessionFile returns session even when PID is dead', () => {
+    const stale: Session = { ...MOCK_SESSION, pid: 999999999 }
+    writeSession(stale)
+    const result = readSessionFile()
+    expect(result).toEqual(stale)
+    // file should still exist (not deleted by readSessionFile)
+    expect(fs.existsSync(testSessionPath)).toBe(true)
+  })
+
+  it('readSessionFile returns null when no session file', () => {
+    expect(readSessionFile()).toBeNull()
+  })
+
+  it('readSessionFile returns null for corrupted JSON', () => {
+    fs.mkdirSync(path.dirname(testSessionPath), { recursive: true })
+    fs.writeFileSync(testSessionPath, 'not-json', 'utf8')
+    expect(readSessionFile()).toBeNull()
+  })
+
+  it('readSessionFile returns null for invalid session shape', () => {
+    fs.mkdirSync(path.dirname(testSessionPath), { recursive: true })
+    fs.writeFileSync(testSessionPath, JSON.stringify({ pid: 'not-a-number' }), 'utf8')
+    expect(readSessionFile()).toBeNull()
   })
 
   it('readSession returns null for session missing tags field', () => {

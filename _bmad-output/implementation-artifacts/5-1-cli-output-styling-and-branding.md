@@ -237,6 +237,9 @@ claude-sonnet-4-6
 - packages/shared/src/format.ts (new)
 - packages/shared/src/format.test.ts (new)
 - packages/shared/src/index.ts
+- packages/shared/src/notify.ts (added notifyCustom)
+- packages/shared/src/session.ts (added readSessionFile)
+- packages/shared/src/session.test.ts
 - packages/cli/src/index.ts
 - packages/cli/src/commands/start.ts
 - packages/cli/src/commands/stop.ts
@@ -246,8 +249,13 @@ claude-sonnet-4-6
 - packages/cli/src/commands/list.ts
 - packages/cli/src/commands/retry.ts
 - packages/cli/src/commands/verify.ts
+- packages/cli/src/pipeline/summarize.ts (empty-transcript short-circuit)
+- packages/cli/src/pipeline/summarize.test.ts
+- packages/cli/src/pipeline/transcribe.ts (improved whisper error message)
+- packages/cli/src/pipeline/transcribe.test.ts
 
 ## Change Log
 
 - 2026-04-09: Implemented story 5.1 — added picocolors-based format module to @kayman/shared, applied styled output to all CLI commands, added 10 unit tests (Date: 2026-04-09)
 - 2026-04-09: Code review fixes — H1: respect NO_COLOR env var in format.ts + status.ts isTTY check; M1: rename shadowed `success` locals in retry.ts to `ok`; M2: align status.ts isTTY with format.ts logic; M3: list.ts empty-filter message now mentions all active filters; M4: added bold() TTY+non-TTY tests; M5: sprint-board.md added to File List
+- 2026-04-10: Code review fixes — H1: fixed 25 failing tests (last/list/verify/retry test mocks missing format stubs; verify tests asserted [PASS]/[FAIL] vs actual [ok]/[err]); H2: isTTY exported from format.ts, status.ts imports it instead of duplicating; M1: added 7 undocumented changed files to File List; M2: memoCommand now has capture health check (2s wait + isProcessAlive) matching start.ts; M3: list.test.ts stale "for project" assertion updated to "matching project"
