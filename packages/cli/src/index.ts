@@ -34,8 +34,9 @@ program
   .command('start [project]')
   .description('Start a recording session')
   .option('--tags <tags...>', 'Tags for the recording session')
-  .action(async (project: string | undefined, opts: { tags?: string[] }) => {
-    await startCommand(project, config, opts.tags ?? [])
+  .option('--skip-checks', 'Skip pre-flight dependency checks')
+  .action(async (project: string | undefined, opts: { tags?: string[]; skipChecks?: boolean }) => {
+    await startCommand(project, config, opts.tags ?? [], opts.skipChecks ?? false)
   })
 
 program
@@ -55,8 +56,9 @@ program
 program
   .command('memo')
   .description('Start a memo recording (no project picker)')
-  .action(async () => {
-    await memoCommand(config)
+  .option('--skip-checks', 'Skip pre-flight dependency checks')
+  .action(async (opts: { skipChecks?: boolean }) => {
+    await memoCommand(config, opts.skipChecks ?? false)
   })
 
 program

@@ -1,8 +1,9 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { readSession, writeSession, recordingDir, success, error, bold } from '@kayman/shared'
+import { readSession, writeSession, isProcessAlive, recordingDir, success, error, bold } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
+import { runPreflightChecks } from './preflight.js'
 
 const CAPTURE_BIN = path.resolve(__dirname, '../bin/kayman-capture')
 
@@ -10,7 +11,9 @@ export async function startCommand(
   project: string | undefined,
   config: Config,
   tags: string[] = [],
+  skipChecks = false,
 ): Promise<void> {
+  if (!skipChecks) await runPreflightChecks(config)
   const existing = readSession()
   if (existing) {
     process.stderr.write(error('Recording already in progress. Run kayman stop first.') + '\n')
@@ -40,8 +43,15 @@ export async function startCommand(
     detached: true,
     stdio: 'ignore',
   })
-  child.unref()
 
+  await new Promise(resolve => setTimeout(resolve, 2000))
+
+  if (!isProcessAlive(child.pid!)) {
+    process.stderr.write(error(`Capture failed to start: ${child.exitCode ?? 'unknown'}. Check audio permissions in System Settings > Privacy & Security > Screen & System Audio Recording.`) + '\n')
+    process.exit(1)
+  }
+
+  child.unref()
   writeSession({ pid: child.pid!, audioPath, project: resolvedProject, startedAt: new Date().toISOString(), tags })
   process.stdout.write(success(`Recording started. ${bold(resolvedProject)}`) + '\n')
 }
