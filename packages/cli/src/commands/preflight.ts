@@ -37,7 +37,7 @@ export async function runPreflightChecks(config: Config): Promise<void> {
     }
   } catch (err) {
     const e = err as Error
-    if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout')) {
+    if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout') || e.message.includes('ENOTFOUND')) {
       process.stdout.write(warn('AI provider check timed out — proceeding anyway.') + '\n')
     } else {
       process.stderr.write(error('AI provider authentication failed. Check ai_api_key in config.yaml.') + '\n')

@@ -55,6 +55,35 @@ describe('format helpers — TTY mode', () => {
   })
 })
 
+describe('format helpers — NO_COLOR env var', () => {
+  let format: typeof import('./format.js')
+
+  beforeEach(async () => {
+    vi.resetModules()
+    Object.defineProperty(process.stdout, 'isTTY', { value: true, configurable: true })
+    vi.stubEnv('NO_COLOR', '1')
+    format = await import('./format.js')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    Object.defineProperty(process.stdout, 'isTTY', { value: undefined, configurable: true })
+    vi.resetModules()
+  })
+
+  it('success() returns plain [ok] prefix when NO_COLOR is set, even in TTY', () => {
+    const result = format.success('msg')
+    expect(result).toBe('[ok] msg')
+    expect(result).not.toMatch(/\x1b\[/)
+  })
+
+  it('error() returns plain [err] prefix when NO_COLOR is set', () => {
+    const result = format.error('msg')
+    expect(result).toBe('[err] msg')
+    expect(result).not.toMatch(/\x1b\[/)
+  })
+})
+
 describe('format helpers — non-TTY mode', () => {
   let format: typeof import('./format.js')
 
