@@ -221,6 +221,30 @@ describe('runSummarize', () => {
     expect(writeFileSyncMock).toHaveBeenCalledWith('/tmp/summary.json', expect.any(String), 'utf8')
   })
 
+  it('does not append Full Transcript when transcript is long (>= 300 words)', async () => {
+    const longTranscript = Array(300).fill('word').join(' ')
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => longTranscript)
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({
+      transcriptPath: '/tmp/audio.txt',
+      project: null,
+      recordingDir: '/tmp',
+      config: mockConfig,
+    })
+
+    expect(result.fullSummary).toBe(validAiOutput.fullSummary)
+    expect(result.fullSummary).not.toContain('**Full Transcript:**')
+  })
+
   it('does not call AI for empty transcript', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => '')
