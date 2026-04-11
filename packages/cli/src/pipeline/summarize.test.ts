@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PipelineError, PipelineStage } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
+import { buildPrompt } from './summarize.js'
 
 vi.mock('fs')
 vi.mock('ai')
@@ -199,6 +200,45 @@ describe('runSummarize', () => {
     }
   })
 
+  it('returns hardcoded Empty Recording summary for empty transcript', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => '   ')
+    const writeFileSyncMock = vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({
+      transcriptPath: '/tmp/audio.txt',
+      project: 'Kayman',
+      recordingDir: '/tmp',
+      config: mockConfig,
+    })
+
+    expect(result.title).toBe('Empty Recording')
+    expect(result.tldr).toBe('No speech detected in this recording.')
+    expect(result.keyPoints).toEqual([])
+    expect(result.fullSummary).toContain('No speech was detected')
+    expect(result.project).toBe('Kayman')
+    expect(writeFileSyncMock).toHaveBeenCalledWith('/tmp/summary.json', expect.any(String), 'utf8')
+  })
+
+  it('does not call AI for empty transcript', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => '')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({
+      transcriptPath: '/tmp/audio.txt',
+      project: null,
+      recordingDir: '/tmp',
+      config: mockConfig,
+    })
+
+    expect(ai.generateText).not.toHaveBeenCalled()
+  })
+
   it('writes summary.json to recordingDir', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
@@ -223,5 +263,182 @@ describe('runSummarize', () => {
       expect.any(String),
       'utf8',
     )
+  })
+})
+
+describe('buildPrompt', () => {
+  it('returns custom template + transcript when promptTemplate is provided', () => {
+    const result = buildPrompt('my transcript', 'Custom template.')
+    expect(result).toBe('Custom template.\nTranscript:\nmy transcript')
+  })
+
+  it('returns default prompt when promptTemplate is undefined', () => {
+    const result = buildPrompt('my transcript', undefined)
+    expect(result).toContain('You are an expert summarizer')
+    expect(result).toContain('my transcript')
+  })
+
+  it('returns default prompt when promptTemplate is empty string', () => {
+    const result = buildPrompt('my transcript', '')
+    expect(result).toContain('You are an expert summarizer')
+  })
+
+  it('returns default prompt when promptTemplate is whitespace only', () => {
+    const result = buildPrompt('my transcript', '   ')
+    expect(result).toContain('You are an expert summarizer')
+  })
+
+  it('trims leading/trailing whitespace from custom template', () => {
+    const result = buildPrompt('my transcript', '  Custom template.  ')
+    expect(result).toBe('Custom template.\nTranscript:\nmy transcript')
+  })
+})
+
+describe('runSummarize with promptTemplate', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  const validAiOutput = {
+    title: 'Test',
+    tldr: 'Summary.',
+    keyPoints: ['Point A'],
+    fullSummary: 'Full summary.',
+  }
+
+  it('passes custom promptTemplate to generateText when project has one', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'the transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const configWithTemplate: Config = {
+      userName: 'Szymon',
+      aiProvider: 'openai',
+      aiModel: 'gpt-4o-mini',
+      aiApiKey: 'sk-test',
+      notionToken: 'secret',
+      notionDatabaseId: 'db-123',
+      projects: [{ name: 'Standup', notionPageId: 'page-1', promptTemplate: 'Custom standup prompt.' }],
+      audioSource: 'system_and_mic',
+    }
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({ transcriptPath: '/tmp/t.txt', project: 'Standup', recordingDir: '/tmp', config: configWithTemplate })
+
+    expect(ai.generateText).toHaveBeenCalledWith(expect.objectContaining({
+      prompt: 'Custom standup prompt.\nTranscript:\nthe transcript',
+    }))
+  })
+
+  it('uses default prompt when project has no promptTemplate', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'the transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const configNoTemplate: Config = {
+      userName: 'Szymon',
+      aiProvider: 'openai',
+      aiModel: 'gpt-4o-mini',
+      aiApiKey: 'sk-test',
+      notionToken: 'secret',
+      notionDatabaseId: 'db-123',
+      projects: [{ name: 'Client', notionPageId: 'page-2' }],
+      audioSource: 'system_and_mic',
+    }
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({ transcriptPath: '/tmp/t.txt', project: 'Client', recordingDir: '/tmp', config: configNoTemplate })
+
+    const call = vi.mocked(ai.generateText).mock.calls[0][0]
+    expect((call as { prompt: string }).prompt).toContain('You are an expert summarizer')
+  })
+
+  it('uses default prompt when project is null (memo)', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'the transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({ transcriptPath: '/tmp/t.txt', project: null, recordingDir: '/tmp', config: { userName: 'Szymon', aiProvider: 'openai', aiModel: 'gpt-4o-mini', aiApiKey: 'sk-test', notionToken: 'secret', notionDatabaseId: 'db-123', projects: [], audioSource: 'system_and_mic' } })
+
+    const call = vi.mocked(ai.generateText).mock.calls[0][0]
+    expect((call as { prompt: string }).prompt).toContain('You are an expert summarizer')
+  })
+
+  it('uses default prompt when project name not found in config.projects', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'the transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const configWithProjects: Config = {
+      userName: 'Szymon',
+      aiProvider: 'openai',
+      aiModel: 'gpt-4o-mini',
+      aiApiKey: 'sk-test',
+      notionToken: 'secret',
+      notionDatabaseId: 'db-123',
+      projects: [{ name: 'Standup', notionPageId: 'page-1', promptTemplate: 'Custom prompt.' }],
+      audioSource: 'system_and_mic',
+    }
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({ transcriptPath: '/tmp/t.txt', project: 'UnknownProject', recordingDir: '/tmp', config: configWithProjects })
+
+    const call = vi.mocked(ai.generateText).mock.calls[0][0]
+    expect((call as { prompt: string }).prompt).toContain('You are an expert summarizer')
+  })
+
+  it('does not append full transcript to fullSummary when custom promptTemplate is used (short transcript)', async () => {
+    const shortTranscript = 'short'
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => shortTranscript)
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const configWithTemplate: Config = {
+      userName: 'Szymon',
+      aiProvider: 'openai',
+      aiModel: 'gpt-4o-mini',
+      aiApiKey: 'sk-test',
+      notionToken: 'secret',
+      notionDatabaseId: 'db-123',
+      projects: [{ name: 'Standup', notionPageId: 'page-1', promptTemplate: 'Custom standup prompt.' }],
+      audioSource: 'system_and_mic',
+    }
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({ transcriptPath: '/tmp/t.txt', project: 'Standup', recordingDir: '/tmp', config: configWithTemplate })
+
+    expect(result.fullSummary).not.toContain('**Full Transcript:**')
+    expect(result.fullSummary).toBe(validAiOutput.fullSummary)
   })
 })

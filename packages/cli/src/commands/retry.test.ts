@@ -94,7 +94,7 @@ describe('retryCommand', () => {
     await retryCommand(mockConfig, {})
 
     expect(runExport).toHaveBeenCalledOnce()
-    expect(process.stdout.write).toHaveBeenCalledWith('Export succeeded for "Test Meeting".\n')
+    expect(process.stdout.write).toHaveBeenCalledWith('[ok] Export succeeded for "Test Meeting".\n')
     // .exported marker should be written
     const exported = path.join(testDataDir, 'recordings', '2026-03-01-proj', '.exported')
     expect(fs.existsSync(exported)).toBe(true)

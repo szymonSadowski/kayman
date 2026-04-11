@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { DATA_DIR, notify, notifyError, PipelineStage } from '@kayman/shared'
+import { DATA_DIR, notify, notifyError, PipelineStage, success, error, info } from '@kayman/shared'
 import type { Config, Summary } from '@kayman/shared'
 import { runExport } from '../pipeline/export.js'
 
@@ -44,7 +44,7 @@ async function retryOne(dir: string, config: Config): Promise<boolean> {
   try {
     fs.accessSync(summaryPath)
   } catch {
-    process.stderr.write(`No summary.json found at ${dir}\n`)
+    process.stderr.write(error(`No summary.json found at ${dir}`) + '\n')
     return false
   }
 
@@ -64,26 +64,26 @@ async function retryOne(dir: string, config: Config): Promise<boolean> {
     await runExport({ summary, config, tags })
     fs.writeFileSync(path.join(dir, '.exported'), '', 'utf8')
     notify(PipelineStage.Done)
-    process.stdout.write(`Export succeeded for "${summary.title}".\n`)
+    process.stdout.write(success(`Export succeeded for "${summary.title}".`) + '\n')
     return true
   } catch (err) {
     notifyError(PipelineStage.Exporting, err as Error)
-    process.stderr.write(`Export failed for "${summary.title}": ${(err as Error).message}\n`)
+    process.stderr.write(error(`Export failed for "${summary.title}": ${(err as Error).message}`) + '\n')
     return false
   }
 }
 
 export async function retryCommand(config: Config, opts: RetryOptions): Promise<void> {
   if (opts.path) {
-    const success = await retryOne(opts.path, config)
-    if (!success) process.exit(1)
+    const ok = await retryOne(opts.path, config)
+    if (!ok) process.exit(1)
     return
   }
 
   const failed = findFailedExports()
 
   if (failed.length === 0) {
-    process.stdout.write('No failed exports found.\n')
+    process.stdout.write(info('No failed exports found.') + '\n')
     return
   }
 
@@ -95,12 +95,12 @@ export async function retryCommand(config: Config, opts: RetryOptions): Promise<
       if (ok) succeeded++
       else failedCount++
     }
-    process.stdout.write(`Retried ${failed.length} exports: ${succeeded} succeeded, ${failedCount} failed.\n`)
+    process.stdout.write(info(`Retried ${failed.length} exports: ${succeeded} succeeded, ${failedCount} failed.`) + '\n')
     if (failedCount > 0) process.exit(1)
     return
   }
 
   // Default: retry most recent failed
-  const success = await retryOne(failed[0], config)
-  if (!success) process.exit(1)
+  const ok = await retryOne(failed[0], config)
+  if (!ok) process.exit(1)
 }

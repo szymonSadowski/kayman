@@ -60,10 +60,10 @@ describe('verifyCommand', () => {
     await verifyCommand(mockConfig)
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
-    expect(calls.some(c => c.includes('[PASS] Config file'))).toBe(true)
-    expect(calls.some(c => c.includes('[PASS] Whisper binary'))).toBe(true)
-    expect(calls.some(c => c.includes('[PASS] AI provider'))).toBe(true)
-    expect(calls.some(c => c.includes('[PASS] Notion access'))).toBe(true)
+    expect(calls.some(c => c.includes('[ok] Config file'))).toBe(true)
+    expect(calls.some(c => c.includes('[ok] Whisper binary'))).toBe(true)
+    expect(calls.some(c => c.includes('[ok] AI provider'))).toBe(true)
+    expect(calls.some(c => c.includes('[ok] Notion access'))).toBe(true)
     expect(calls.some(c => c.includes('All checks passed'))).toBe(true)
   })
 
@@ -74,7 +74,7 @@ describe('verifyCommand', () => {
     await expect(verifyCommand(mockConfig)).rejects.toThrow('exit')
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
-    expect(calls.some(c => c.includes('[FAIL] Config file'))).toBe(true)
+    expect(calls.some(c => c.includes('[err] Config file'))).toBe(true)
     expect(calls.some(c => c.includes('Fix config errors first'))).toBe(true)
     // Should NOT have checked whisper, AI, or Notion
     expect(calls.some(c => c.includes('Whisper'))).toBe(false)
@@ -95,7 +95,7 @@ describe('verifyCommand', () => {
     await expect(verifyCommand(mockConfig)).rejects.toThrow('exit')
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
-    expect(calls.some(c => c.includes('[FAIL] Whisper binary'))).toBe(true)
+    expect(calls.some(c => c.includes('[err] Whisper binary'))).toBe(true)
     // Other checks still ran
     expect(calls.some(c => c.includes('AI provider'))).toBe(true)
     expect(calls.some(c => c.includes('Notion access'))).toBe(true)
@@ -116,7 +116,7 @@ describe('verifyCommand', () => {
     await expect(verifyCommand(mockConfig)).rejects.toThrow('exit')
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
-    expect(calls.some(c => c.includes('[FAIL] AI provider'))).toBe(true)
+    expect(calls.some(c => c.includes('[err] AI provider'))).toBe(true)
     expect(calls.some(c => c.includes('ai_api_key'))).toBe(true)
     exitSpy.mockRestore()
   })
@@ -135,7 +135,7 @@ describe('verifyCommand', () => {
     await expect(verifyCommand(mockConfig)).rejects.toThrow('exit')
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
-    expect(calls.some(c => c.includes('[FAIL] Notion access'))).toBe(true)
+    expect(calls.some(c => c.includes('[err] Notion access'))).toBe(true)
     exitSpy.mockRestore()
   })
 
@@ -154,8 +154,8 @@ describe('verifyCommand', () => {
 
     const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
     // All checks ran
-    expect(calls.filter(c => c.includes('[FAIL]')).length).toBeGreaterThanOrEqual(3)
-    expect(calls.filter(c => c.includes('[PASS]')).length).toBeGreaterThanOrEqual(1) // config passed
+    expect(calls.filter(c => c.includes('[err]')).length).toBeGreaterThanOrEqual(3)
+    expect(calls.filter(c => c.includes('[ok]')).length).toBeGreaterThanOrEqual(1) // config passed
     exitSpy.mockRestore()
   })
 })

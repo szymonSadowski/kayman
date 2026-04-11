@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { loadConfig } from '@kayman/shared'
+import { loadConfig, error } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { startCommand } from './commands/start'
 import { stopCommand } from './commands/stop'
@@ -11,21 +11,29 @@ import { completionCommand } from './completion/completion'
 import { listCommand } from './commands/list'
 import { retryCommand } from './commands/retry'
 import { verifyCommand } from './commands/verify'
+import { helpCommand } from './commands/help'
 
 const program = new Command()
   .name('kayman')
   .description('Meeting recording and AI summary tool')
   .version('0.0.1')
+  .addHelpCommand(false)
+  .helpOption(false)
+
+program.option('-h, --help', 'Show help')
+program.on('option:help', () => {
+  helpCommand().then(() => process.exit(0))
+})
 
 let config: Config
 
 // Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (actionCommand.name() === 'completion' || actionCommand.name() === 'verify') return
+  if (['completion', 'verify', 'help'].includes(actionCommand.name())) return
   try {
     config = loadConfig()
   } catch (err) {
-    process.stderr.write((err as Error).message + '\n')
+    process.stderr.write(error((err as Error).message) + '\n')
     process.exit(1)
   }
 })
@@ -34,8 +42,9 @@ program
   .command('start [project]')
   .description('Start a recording session')
   .option('--tags <tags...>', 'Tags for the recording session')
-  .action(async (project: string | undefined, opts: { tags?: string[] }) => {
-    await startCommand(project, config, opts.tags ?? [])
+  .option('--skip-checks', 'Skip pre-flight dependency checks')
+  .action(async (project: string | undefined, opts: { tags?: string[]; skipChecks?: boolean }) => {
+    await startCommand(project, config, opts.tags ?? [], opts.skipChecks ?? false)
   })
 
 program
@@ -55,8 +64,9 @@ program
 program
   .command('memo')
   .description('Start a memo recording (no project picker)')
-  .action(async () => {
-    await memoCommand(config)
+  .option('--skip-checks', 'Skip pre-flight dependency checks')
+  .action(async (opts: { skipChecks?: boolean }) => {
+    await memoCommand(config, opts.skipChecks ?? false)
   })
 
 program
@@ -99,5 +109,16 @@ program
   .action(async () => {
     await verifyCommand(config)
   })
+
+program
+  .command('help [command]')
+  .description('Show command help')
+  .action(async (cmd?: string) => {
+    await helpCommand(cmd)
+  })
+
+program.action(async () => {
+  await helpCommand()
+})
 
 program.parse()

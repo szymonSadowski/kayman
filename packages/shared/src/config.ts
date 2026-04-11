@@ -65,11 +65,17 @@ export function loadConfig(configPath = path.join(CONFIG_DIR, 'config.yaml')): C
     notionToken: parsed.notion_token as string,
     notionDatabaseId: parsed.notion_database_id as string,
     projects: (
-      (parsed.projects as Array<{ name: string; notion_page_id: string }>) ?? []
-    ).map((p) => ({
-      name: p.name,
-      notionPageId: p.notion_page_id,
-    })),
+      (parsed.projects as Array<{ name: string; notion_page_id: string; prompt_template?: unknown }>) ?? []
+    ).map((p) => {
+      if (p.prompt_template !== undefined && typeof p.prompt_template !== 'string') {
+        throw new Error('Config error: prompt_template must be a string')
+      }
+      return {
+        name: p.name,
+        notionPageId: p.notion_page_id,
+        promptTemplate: p.prompt_template,
+      }
+    }),
     audioSource,
     whisperBinaryPath: parsed.whisper_binary_path as string | undefined,
     whisperModelPath: parsed.whisper_model_path as string | undefined,

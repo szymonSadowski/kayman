@@ -1,10 +1,19 @@
-import { readSession } from '@kayman/shared'
+import { readSessionFile, isProcessAlive, clearSession, notifyCustom, info, warn, bold, dim, isTTY } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 
 export async function statusCommand(_config: Config): Promise<void> {
-  const session = readSession()
+  const raw = readSessionFile()
+
+  if (raw && !isProcessAlive(raw.pid)) {
+    clearSession()
+    notifyCustom('Recording lost: capture process exited unexpectedly.')
+    process.stdout.write(warn('Recording: inactive (capture process died unexpectedly)') + '\n')
+    return
+  }
+
+  const session = raw
   if (!session) {
-    process.stdout.write('Recording: inactive\n')
+    process.stdout.write(info('Recording: inactive') + '\n')
     return
   }
 
@@ -12,5 +21,6 @@ export async function statusCommand(_config: Config): Promise<void> {
   const minutes = Math.floor(elapsedSec / 60)
   const seconds = elapsedSec % 60
   const label = session.project ?? 'memo'
-  process.stdout.write(`Recording: active — ${label} (duration: ${minutes}m ${seconds}s)\n`)
+  const recPrefix = isTTY ? '⏺ ' : '[rec] '
+  process.stdout.write(`${recPrefix}${bold(label)} — ${dim(`${minutes}m ${seconds}s`)}\n`)
 }

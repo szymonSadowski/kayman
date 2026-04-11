@@ -13,7 +13,11 @@ const summarySchema = z.object({
   fullSummary: z.string(),
 })
 
-function buildPrompt(transcript: string): string {
+export function buildPrompt(transcript: string, promptTemplate?: string): string {
+  if (promptTemplate && promptTemplate.trim()) {
+    return promptTemplate.trim() + '\nTranscript:\n' + transcript
+  }
+
   const wordCount = transcript.split(/\s+/).length
   const shortTranscript = wordCount < 300
 
@@ -44,6 +48,24 @@ export async function runSummarize(input: {
 
   const transcript = fs.readFileSync(transcriptPath, 'utf8')
 
+  if (!transcript.trim()) {
+    const summary: Summary = {
+      title: 'Empty Recording',
+      tldr: 'No speech detected in this recording.',
+      keyPoints: [],
+      fullSummary: 'No speech was detected in this recording. The audio may have been silent or the microphone was disconnected.',
+      project,
+      recordedAt: new Date().toISOString(),
+      transcriptPath,
+    }
+    const summaryPath = path.join(recordingDir, 'summary.json')
+    fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8')
+    return summary
+  }
+
+  const projectConfig = project ? config.projects.find(p => p.name === project) : undefined
+  const promptTemplate = projectConfig?.promptTemplate
+
   const model = createProviderModel(config)
 
   let parsed: z.infer<typeof summarySchema>
@@ -51,7 +73,7 @@ export async function runSummarize(input: {
     const result = await generateText({
       model,
       output: Output.object({ schema: summarySchema }),
-      prompt: buildPrompt(transcript),
+      prompt: buildPrompt(transcript, promptTemplate),
     })
     parsed = result.output
   } catch (err) {
@@ -61,7 +83,7 @@ export async function runSummarize(input: {
   const keyPoints = applySpotlight(parsed.keyPoints, config.userName)
 
   const wordCount = transcript.split(/\s+/).length
-  const fullSummary = wordCount < 300
+  const fullSummary = !promptTemplate && wordCount < 300
     ? `${parsed.fullSummary}\n\n---\n\n**Full Transcript:**\n${transcript}`
     : parsed.fullSummary
 

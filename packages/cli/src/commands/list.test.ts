@@ -11,6 +11,9 @@ const { testDataDir } = vi.hoisted(() => {
 
 vi.mock('@kayman/shared', () => ({
   DATA_DIR: testDataDir,
+  info: (s: string) => s,
+  bold: (s: string) => s,
+  dim: (s: string) => s,
 }))
 
 import { listCommand } from './list.js'
@@ -81,7 +84,7 @@ describe('listCommand', () => {
 
     await listCommand(mockConfig, { project: 'Nonexistent' })
 
-    expect(process.stdout.write).toHaveBeenCalledWith('No recordings found for project "Nonexistent".\n')
+    expect(process.stdout.write).toHaveBeenCalledWith('No recordings found matching project "Nonexistent".\n')
   })
 
   it('filters by --from date', async () => {

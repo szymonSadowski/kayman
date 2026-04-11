@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { loadConfig } from '@kayman/shared'
+import { loadConfig, success, error, info } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { Client } from '@notionhq/client'
 import { generateText } from 'ai'
@@ -89,8 +89,8 @@ async function checkNotion(config: Config): Promise<CheckResult> {
 }
 
 function printResult(r: CheckResult): void {
-  const icon = r.pass ? 'PASS' : 'FAIL'
-  process.stdout.write(`[${icon}] ${r.name}: ${r.message}\n`)
+  const line = `${r.name}: ${r.message}`
+  process.stdout.write((r.pass ? success(line) : error(line)) + '\n')
 }
 
 export async function verifyCommand(_config: Config): Promise<void> {
@@ -102,7 +102,7 @@ export async function verifyCommand(_config: Config): Promise<void> {
   printResult(configResult)
 
   if (!config) {
-    process.stdout.write('Fix config errors first, then re-run kayman verify.\n')
+    process.stdout.write(info('Fix config errors first, then re-run kayman verify.') + '\n')
     process.exit(1)
   }
 
@@ -128,7 +128,7 @@ export async function verifyCommand(_config: Config): Promise<void> {
 
   const allPassed = results.every((r) => r.pass)
   if (allPassed) {
-    process.stdout.write('All checks passed. kayman is ready to use.\n')
+    process.stdout.write(success('All checks passed. kayman is ready to use.') + '\n')
   } else {
     process.exit(1)
   }
