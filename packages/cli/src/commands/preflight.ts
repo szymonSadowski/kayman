@@ -25,23 +25,38 @@ export async function runPreflightChecks(config: Config): Promise<void> {
     }
   }
 
-  // 3. AI provider (async, 5s timeout)
-  try {
-    const model = createProviderModel(config)
+  // 3. AI provider (async)
+  if (config.aiProvider === 'ollama') {
+    const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
+    const timeout = setTimeout(() => controller.abort(), 3000)
     try {
-      await generateText({ model, prompt: 'Reply with OK', maxOutputTokens: 1, abortSignal: controller.signal })
+      const res = await fetch(baseURL + '/api/tags', { signal: controller.signal })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    } catch {
+      process.stderr.write(error(`Ollama not reachable at ${baseURL}. Start Ollama first.`) + '\n')
+      process.exit(1)
     } finally {
       clearTimeout(timeout)
     }
-  } catch (err) {
-    const e = err as Error
-    if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout')) {
-      process.stdout.write(warn('AI provider check timed out — proceeding anyway.') + '\n')
-    } else {
-      process.stderr.write(error('AI provider authentication failed. Check ai_api_key in config.yaml.') + '\n')
-      process.exit(1)
+  } else {
+    try {
+      const model = createProviderModel(config)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+      try {
+        await generateText({ model, prompt: 'Reply with OK', maxOutputTokens: 1, abortSignal: controller.signal })
+      } finally {
+        clearTimeout(timeout)
+      }
+    } catch (err) {
+      const e = err as Error
+      if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout')) {
+        process.stdout.write(warn('AI provider check timed out — proceeding anyway.') + '\n')
+      } else {
+        process.stderr.write(error('AI provider authentication failed. Check ai_api_key in config.yaml.') + '\n')
+        process.exit(1)
+      }
     }
   }
 

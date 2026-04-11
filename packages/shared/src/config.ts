@@ -8,7 +8,6 @@ const REQUIRED_FIELDS = [
   'user_name',
   'ai_provider',
   'ai_model',
-  'ai_api_key',
   'notion_token',
   'notion_database_id',
 ] as const
@@ -38,11 +37,15 @@ export function loadConfig(configPath = path.join(CONFIG_DIR, 'config.yaml')): C
     }
   }
 
-  const SUPPORTED_AI_PROVIDERS = ['openai', 'anthropic', 'google']
+  const SUPPORTED_AI_PROVIDERS = ['openai', 'anthropic', 'google', 'ollama']
   if (!SUPPORTED_AI_PROVIDERS.includes(parsed.ai_provider as string)) {
     throw new Error(
       `Config error: ai_provider "${parsed.ai_provider}" is not supported. Supported values: ${SUPPORTED_AI_PROVIDERS.join(', ')}.`,
     )
+  }
+
+  if (parsed.ai_provider !== 'ollama' && !parsed.ai_api_key) {
+    throw new Error('Config error: ai_api_key is required')
   }
 
   const VALID_AUDIO_SOURCES: Config['audioSource'][] = [
@@ -61,7 +64,8 @@ export function loadConfig(configPath = path.join(CONFIG_DIR, 'config.yaml')): C
     userName: parsed.user_name as string,
     aiProvider: parsed.ai_provider as string,
     aiModel: parsed.ai_model as string,
-    aiApiKey: parsed.ai_api_key as string,
+    aiApiKey: parsed.ai_api_key as string | undefined,
+    aiBaseUrl: parsed.ai_base_url as string | undefined,
     notionToken: parsed.notion_token as string,
     notionDatabaseId: parsed.notion_database_id as string,
     projects: (

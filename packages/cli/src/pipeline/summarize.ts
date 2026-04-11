@@ -77,6 +77,18 @@ export async function runSummarize(input: {
     })
     parsed = result.output
   } catch (err) {
+    if (config.aiProvider === 'ollama') {
+      const msg = (err as Error).message ?? ''
+      const cause = ((err as { cause?: Error }).cause?.message) ?? ''
+      const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
+      const isConnError = msg.includes('ECONNREFUSED') || msg.includes('ECONNRESET') || cause.includes('ECONNREFUSED') || cause.includes('ECONNRESET')
+      if (isConnError) {
+        throw new PipelineError(PipelineStage.Summarizing, `Ollama not reachable at ${baseURL}. Start Ollama or switch to an API provider with: kayman online`)
+      }
+      if (msg.toLowerCase().includes('model') && (msg.toLowerCase().includes('not found') || msg.includes('404'))) {
+        throw new PipelineError(PipelineStage.Summarizing, `Model '${config.aiModel}' not found in Ollama. Run: ollama pull ${config.aiModel}`)
+      }
+    }
     throw new PipelineError(PipelineStage.Summarizing, (err as Error).message)
   }
 

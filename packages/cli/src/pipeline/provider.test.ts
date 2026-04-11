@@ -5,6 +5,7 @@ import type { Config } from '@kayman/shared'
 vi.mock('@ai-sdk/openai')
 vi.mock('@ai-sdk/anthropic')
 vi.mock('@ai-sdk/google')
+vi.mock('ollama-ai-provider')
 
 const baseConfig: Config = {
   userName: 'Szymon',
@@ -81,7 +82,33 @@ describe('createProviderModel', () => {
     const { createProviderModel } = await import('./provider.js')
 
     expect(() => createProviderModel({ ...baseConfig, aiProvider: 'mistral' })).toThrow(
-      'openai, anthropic, google',
+      'openai, anthropic, google, ollama',
     )
+  })
+
+  it('calls createOllama with baseURL and returns model for ollama provider', async () => {
+    const ollamaModule = await import('ollama-ai-provider')
+    const mockModel = 'ollama-model-instance'
+    const mockClient = vi.fn().mockReturnValue(mockModel)
+    vi.mocked(ollamaModule.createOllama).mockReturnValue(mockClient as unknown as ReturnType<typeof ollamaModule.createOllama>)
+
+    const { createProviderModel } = await import('./provider.js')
+    const result = createProviderModel({ ...baseConfig, aiProvider: 'ollama', aiApiKey: undefined })
+
+    expect(ollamaModule.createOllama).toHaveBeenCalledWith({ baseURL: 'http://localhost:11434/api' })
+    expect(mockClient).toHaveBeenCalledWith('test-model')
+    expect(result).toBe(mockModel)
+  })
+
+  it('uses custom aiBaseUrl for ollama when provided', async () => {
+    const ollamaModule = await import('ollama-ai-provider')
+    const mockModel = 'ollama-model-instance'
+    const mockClient = vi.fn().mockReturnValue(mockModel)
+    vi.mocked(ollamaModule.createOllama).mockReturnValue(mockClient as unknown as ReturnType<typeof ollamaModule.createOllama>)
+
+    const { createProviderModel } = await import('./provider.js')
+    createProviderModel({ ...baseConfig, aiProvider: 'ollama', aiApiKey: undefined, aiBaseUrl: 'http://192.168.1.10:11434' })
+
+    expect(ollamaModule.createOllama).toHaveBeenCalledWith({ baseURL: 'http://192.168.1.10:11434/api' })
   })
 })
