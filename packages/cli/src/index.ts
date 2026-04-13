@@ -12,6 +12,7 @@ import { listCommand } from './commands/list'
 import { retryCommand } from './commands/retry'
 import { verifyCommand } from './commands/verify'
 import { helpCommand } from './commands/help'
+import { modelsCommand } from './commands/models'
 
 const program = new Command()
   .name('kayman')
@@ -115,6 +116,14 @@ program
   .description('Show command help')
   .action(async (cmd?: string) => {
     await helpCommand(cmd)
+  })
+
+program
+  .command('models [subcommand] [model]')
+  .description('Manage local whisper models (list, download, remove)')
+  .action(async (subcommand?: string, model?: string) => {
+    const args = [subcommand, model].filter((x): x is string => x !== undefined)
+    await modelsCommand(args, config)
   })
 
 program.action(async () => {

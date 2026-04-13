@@ -24,7 +24,7 @@ const COMMAND_GROUPS: Array<{ group: string; commands: Array<{ name: string; des
       { name: 'verify',     desc: 'Validate kayman setup and dependencies' },
       { name: 'completion', desc: 'Install shell tab completion for project names' },
       { name: 'config',     desc: 'Manage kayman configuration (coming soon)' },
-      { name: 'models',     desc: 'List available AI models (coming soon)' },
+      { name: 'models',     desc: 'Manage local whisper models (list, download, remove)' },
       { name: 'offline',    desc: 'Switch to offline mode (coming soon)' },
       { name: 'online',     desc: 'Switch back to online mode (coming soon)' },
     ],
@@ -155,6 +155,26 @@ ${bold('Options:')}
 ${bold('Examples:')}
   kayman completion install
   kayman completion install zsh
+`.trim(),
+
+  models: () => `
+${bold('kayman models')} — Manage local whisper models
+
+${bold('Usage:')}  kayman models [list]
+        kayman models download <model>
+        kayman models remove <model>
+
+${bold('Subcommands:')}
+  list             Show available models with download status and size
+  download <model> Download a whisper model to ~/.cache/whisper/
+  remove <model>   Remove a downloaded model
+
+${bold('Models:')}  tiny (75 MB), base (142 MB), small (466 MB), medium (1.5 GB), large (2.9 GB)
+
+${bold('Examples:')}
+  kayman models list
+  kayman models download base
+  kayman models remove large
 `.trim(),
 
   help: () => `
