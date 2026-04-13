@@ -23,7 +23,7 @@ const COMMAND_GROUPS: Array<{ group: string; commands: Array<{ name: string; des
     commands: [
       { name: 'verify',     desc: 'Validate kayman setup and dependencies' },
       { name: 'completion', desc: 'Install shell tab completion for project names' },
-      { name: 'config',     desc: 'Manage kayman configuration (coming soon)' },
+      { name: 'config',     desc: 'View and edit kayman configuration (list, get, set, path)' },
       { name: 'models',     desc: 'Manage local whisper models (list, download, remove)' },
       { name: 'offline',    desc: 'Switch to offline mode (coming soon)' },
       { name: 'online',     desc: 'Switch back to online mode (coming soon)' },
@@ -175,6 +175,28 @@ ${bold('Examples:')}
   kayman models list
   kayman models download base
   kayman models remove large
+`.trim(),
+
+  config: () => `
+${bold('kayman config')} — View and edit kayman configuration
+
+${bold('Usage:')}  kayman config list
+        kayman config get <key>
+        kayman config set <key> <value>
+        kayman config path
+
+${bold('Subcommands:')}
+  list             Print all config values (sensitive fields masked)
+  get <key>        Print a single config value (unmasked)
+  set <key> <val>  Update a config field
+  path             Print the path to the config file
+
+${bold('Examples:')}
+  kayman config list
+  kayman config get ai_provider
+  kayman config set ai_provider ollama
+  kayman config set user_name "Szymon Sadowski"
+  kayman config path
 `.trim(),
 
   help: () => `
