@@ -144,6 +144,19 @@ describe('retryCommand', () => {
     exitSpy.mockRestore()
   })
 
+  it('offline-deferred recording (no .exported, has summary.json) is retried successfully', async () => {
+    // Simulates a recording that failed to export while offline (Ollama mode)
+    createRecording('2026-04-13-offline')
+    vi.mocked(runExport).mockResolvedValue('page-id')
+
+    await retryCommand(mockConfig, {})
+
+    expect(runExport).toHaveBeenCalledOnce()
+    const exported = path.join(testDataDir, 'recordings', '2026-04-13-offline', '.exported')
+    expect(fs.existsSync(exported)).toBe(true)
+    expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('Export succeeded'))
+  })
+
   it('does not write .exported on retry failure', async () => {
     createRecording('2026-03-01-proj')
     vi.mocked(runExport).mockRejectedValue(new Error('Notion down'))

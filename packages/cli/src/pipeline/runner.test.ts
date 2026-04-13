@@ -132,6 +132,68 @@ describe('pipeline runner', () => {
     expect(exitSpy).toHaveBeenCalledWith(1)
   })
 
+  it('Ollama mode: notifies error and exits 0 on network export failure, writes markers and pointer', async () => {
+    const shared = await import('@kayman/shared')
+    const { runTranscribe } = await import('./transcribe.js')
+    const { runSummarize } = await import('./summarize.js')
+    const { runExport } = await import('./export.js')
+    const fs = await import('fs')
+
+    const ollamaConfig = { aiProvider: 'ollama' }
+    vi.mocked(shared.loadConfig).mockReturnValue(ollamaConfig as never)
+    vi.mocked(runTranscribe).mockResolvedValue('/tmp/recordings/audio.txt')
+    vi.mocked(runSummarize).mockResolvedValue(mockSummary as never)
+    vi.mocked(runExport).mockRejectedValue(
+      new shared.PipelineError(shared.PipelineStage.Exporting, 'fetch failed: network error'),
+    )
+    vi.mocked(fs.mkdirSync).mockReturnValue(undefined as never)
+    vi.mocked(fs.writeFileSync).mockReturnValue(undefined)
+    vi.mocked(fs.unlinkSync).mockReturnValue(undefined)
+
+    await import('./runner.js')
+    await flush()
+
+    expect(shared.notifyError).toHaveBeenCalledWith(
+      shared.PipelineStage.Exporting,
+      expect.objectContaining({ message: expect.stringContaining('kayman retry') }),
+      '/tmp/recordings/audio.txt',
+    )
+    // LAST_SUMMARY_PATH pointer still written
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      shared.LAST_SUMMARY_PATH,
+      expect.stringContaining('summaryPath'),
+      'utf8',
+    )
+    // .exported NOT written
+    expect(fs.writeFileSync).not.toHaveBeenCalledWith('/tmp/recordings/.exported', '', 'utf8')
+    // exits 0, not 1
+    expect(exitSpy).toHaveBeenCalledWith(0)
+  })
+
+  it('Ollama mode: non-network export error still propagates as failure', async () => {
+    const shared = await import('@kayman/shared')
+    const { runTranscribe } = await import('./transcribe.js')
+    const { runSummarize } = await import('./summarize.js')
+    const { runExport } = await import('./export.js')
+    const fs = await import('fs')
+
+    const ollamaConfig = { aiProvider: 'ollama' }
+    vi.mocked(shared.loadConfig).mockReturnValue(ollamaConfig as never)
+    vi.mocked(runTranscribe).mockResolvedValue('/tmp/recordings/audio.txt')
+    vi.mocked(runSummarize).mockResolvedValue(mockSummary as never)
+    vi.mocked(shared.PipelineError)
+    const err = new shared.PipelineError(shared.PipelineStage.Exporting, 'auth error')
+    vi.mocked(runExport).mockRejectedValue(err)
+    vi.mocked(fs.mkdirSync).mockReturnValue(undefined as never)
+    vi.mocked(fs.writeFileSync).mockReturnValue(undefined)
+
+    await import('./runner.js')
+    await flush()
+
+    expect(shared.notifyError).toHaveBeenCalledWith(shared.PipelineStage.Exporting, err, '/tmp/recordings/audio.txt')
+    expect(exitSpy).toHaveBeenCalledWith(1)
+  })
+
   it('passes empty string project arg as null to summarize', async () => {
     process.argv = ['node', 'runner.js', '/tmp/audio.caf', '', '/tmp/recordings']
 

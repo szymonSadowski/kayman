@@ -60,16 +60,18 @@ export async function runPreflightChecks(config: Config): Promise<void> {
     }
   }
 
-  // 4. Notion (async, 5s timeout via client timeoutMs)
-  try {
-    const notion = new Client({ auth: config.notionToken, timeoutMs: 5000 })
-    await notion.databases.retrieve({ database_id: config.notionDatabaseId })
-  } catch (err) {
-    if (RequestTimeoutError.isRequestTimeoutError(err) || (err as Error).message.includes('ENOTFOUND')) {
-      process.stdout.write(warn('Notion check timed out — proceeding anyway.') + '\n')
-    } else {
-      process.stderr.write(error('Notion access failed. Check notion_token and notion_database_id in config.yaml.') + '\n')
-      process.exit(1)
+  // 4. Notion (async, 5s timeout via client timeoutMs) — skipped for Ollama (offline mode)
+  if (config.aiProvider !== 'ollama') {
+    try {
+      const notion = new Client({ auth: config.notionToken, timeoutMs: 5000 })
+      await notion.databases.retrieve({ database_id: config.notionDatabaseId })
+    } catch (err) {
+      if (RequestTimeoutError.isRequestTimeoutError(err) || (err as Error).message.includes('ENOTFOUND')) {
+        process.stdout.write(warn('Notion check timed out — proceeding anyway.') + '\n')
+      } else {
+        process.stderr.write(error('Notion access failed. Check notion_token and notion_database_id in config.yaml.') + '\n')
+        process.exit(1)
+      }
     }
   }
 }

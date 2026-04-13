@@ -16,8 +16,6 @@ _(none)_
 
 ### Epic 6: Local-First Mode & CLI Config
 
-- [ ] **6.2** Local Whisper Model Management
-- [ ] **6.3** Offline-Ready Pipeline
 - [ ] **6.4** Ollama Auto-Pull
 - [ ] **6.5** `kayman config` — CLI Config Editor
 - [ ] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle
@@ -28,7 +26,7 @@ _(none)_
 
 ### Epic 6: Local-First Mode & CLI Config
 
-- [x] **6.1** Ollama Provider Support — [spec](implementation-artifacts/6-1-ollama-provider-support.md) *(ready for review)*
+_(none)_
 
 ---
 
@@ -58,6 +56,12 @@ _(none)_
 - [x] **3.7** `kayman list` — Browse Past Meetings
 - [x] **3.8** `kayman retry` — Re-export Failed Notion Exports
 - [x] **3.9** `kayman verify` — Health Check / Setup Validation
+
+### Epic 6: Local-First Mode & CLI Config
+
+- [x] **6.1** Ollama Provider Support — [spec](implementation-artifacts/6-1-ollama-provider-support.md)
+- [x] **6.2** Local Whisper Model Management — [spec](implementation-artifacts/6-2-local-whisper-model-management.md)
+- [x] **6.3** Offline-Ready Pipeline — [spec](implementation-artifacts/6-3-offline-ready-pipeline.md)
 
 ### Epic 4: Summary Access & Raycast Integration
 
