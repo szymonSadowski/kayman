@@ -1,6 +1,6 @@
 # Story 6.4: Ollama Auto-Pull
 
-Status: review
+Status: done
 
 ## Story
 
