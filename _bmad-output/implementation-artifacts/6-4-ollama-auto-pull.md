@@ -150,6 +150,7 @@ None — implementation was straightforward, no debugging required.
 ### File List
 
 - `packages/cli/package.json`
+- `pnpm-lock.yaml`
 - `packages/cli/src/commands/verify.ts`
 - `packages/cli/src/commands/preflight.ts`
 - `packages/cli/src/commands/verify.test.ts`

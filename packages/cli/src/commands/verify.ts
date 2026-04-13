@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { spawnSync } from 'child_process'
+import { spawn } from 'child_process'
 import { loadConfig, success, error, info } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { Client } from '@notionhq/client'
@@ -44,6 +44,27 @@ function checkWhisperModel(config: Config): CheckResult {
   }
 }
 
+async function fetchOllamaTags(baseURL: string): Promise<string[]> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 5000)
+  try {
+    const res = await fetch(baseURL + '/api/tags', { signal: controller.signal })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = (await res.json()) as { models: { name: string }[] }
+    return data.models.map((m) => m.name)
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+function pullOllamaModel(modelName: string): Promise<number | null> {
+  return new Promise((resolve) => {
+    const child = spawn('ollama', ['pull', modelName], { stdio: 'inherit' })
+    child.on('close', resolve)
+    child.on('error', () => resolve(null))
+  })
+}
+
 async function checkOllamaModel(config: Config): Promise<CheckResult> {
   const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
   const modelName = config.aiModel
@@ -51,11 +72,12 @@ async function checkOllamaModel(config: Config): Promise<CheckResult> {
 
   let models: string[] = []
   try {
-    const res = await fetch(baseURL + '/api/tags')
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as { models: { name: string }[] }
-    models = data.models.map((m) => m.name)
-  } catch {
+    models = await fetchOllamaTags(baseURL)
+  } catch (err) {
+    const msg = (err as Error).message ?? ''
+    if ((err as Error).name === 'AbortError' || msg.includes('ECONNREFUSED')) {
+      return { name: 'AI provider', pass: false, message: `Ollama not reachable at ${baseURL}. Start it with: ollama serve` }
+    }
     return { name: 'AI provider', pass: false, message: 'Ollama not found. Install from https://ollama.com and try again.' }
   }
 
@@ -71,15 +93,13 @@ async function checkOllamaModel(config: Config): Promise<CheckResult> {
     return { name: 'AI provider', pass: false, message: `Model not pulled. Run manually: ollama pull ${modelName}` }
   }
 
-  const result = spawnSync('ollama', ['pull', modelName], { stdio: 'inherit' })
-  if (result.status !== 0) {
+  const exitCode = await pullOllamaModel(modelName)
+  if (exitCode !== 0) {
     return { name: 'AI provider', pass: false, message: `ollama pull failed for model "${modelName}"` }
   }
 
   try {
-    const res = await fetch(baseURL + '/api/tags')
-    const data = (await res.json()) as { models: { name: string }[] }
-    const newModels = data.models.map((m) => m.name)
+    const newModels = await fetchOllamaTags(baseURL)
     if (newModels.some((m) => m === modelName || m === normalizedModel)) {
       return { name: 'AI provider', pass: true, message: `ollama (${modelName}) model pulled and available` }
     }
