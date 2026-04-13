@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { spawnSync } from 'child_process'
 import { loadConfig, success, error, info } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { Client } from '@notionhq/client'
@@ -43,7 +44,55 @@ function checkWhisperModel(config: Config): CheckResult {
   }
 }
 
+async function checkOllamaModel(config: Config): Promise<CheckResult> {
+  const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
+  const modelName = config.aiModel
+  const normalizedModel = modelName.includes(':') ? modelName : `${modelName}:latest`
+
+  let models: string[] = []
+  try {
+    const res = await fetch(baseURL + '/api/tags')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = (await res.json()) as { models: { name: string }[] }
+    models = data.models.map((m) => m.name)
+  } catch {
+    return { name: 'AI provider', pass: false, message: 'Ollama not found. Install from https://ollama.com and try again.' }
+  }
+
+  const modelFound = models.some((m) => m === modelName || m === normalizedModel)
+  if (modelFound) {
+    return { name: 'AI provider', pass: true, message: `ollama (${modelName}) model available` }
+  }
+
+  const { default: confirm } = await import('@inquirer/confirm')
+  const shouldPull = await confirm({ message: `Model "${modelName}" not found. Pull it now?`, default: true })
+
+  if (!shouldPull) {
+    return { name: 'AI provider', pass: false, message: `Model not pulled. Run manually: ollama pull ${modelName}` }
+  }
+
+  const result = spawnSync('ollama', ['pull', modelName], { stdio: 'inherit' })
+  if (result.status !== 0) {
+    return { name: 'AI provider', pass: false, message: `ollama pull failed for model "${modelName}"` }
+  }
+
+  try {
+    const res = await fetch(baseURL + '/api/tags')
+    const data = (await res.json()) as { models: { name: string }[] }
+    const newModels = data.models.map((m) => m.name)
+    if (newModels.some((m) => m === modelName || m === normalizedModel)) {
+      return { name: 'AI provider', pass: true, message: `ollama (${modelName}) model pulled and available` }
+    }
+  } catch {
+    // fall through
+  }
+  return { name: 'AI provider', pass: false, message: `ollama pull completed but model "${modelName}" still not found` }
+}
+
 async function checkAiProvider(config: Config): Promise<CheckResult> {
+  if (config.aiProvider === 'ollama') {
+    return checkOllamaModel(config)
+  }
   try {
     const model = createProviderModel(config)
     const controller = new AbortController()

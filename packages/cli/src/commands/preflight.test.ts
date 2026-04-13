@@ -66,7 +66,7 @@ beforeEach(() => {
   createProviderModelMock.mockReturnValue({})
   generateTextMock.mockResolvedValue({ text: 'OK' })
   retrieveMock.mockResolvedValue({ id: 'db' })
-  fetchMock.mockResolvedValue({ ok: true })
+  fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [{ name: 'llama3:latest' }] }) })
   vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 })
@@ -181,6 +181,27 @@ describe('runPreflightChecks', () => {
     await expect(runPreflightChecks(ollamaConfig)).rejects.toThrow('exit')
     expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('Ollama not reachable'))
     expect(process.exit).toHaveBeenCalledWith(1)
+    exitSpy.mockRestore()
+  })
+
+  it('exits 1 when Ollama model is not pulled', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [] }) })
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).rejects.toThrow('exit')
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('Ollama model "llama3" not available. Run: kayman verify to set up.')
+    )
+    expect(process.exit).toHaveBeenCalledWith(1)
+    exitSpy.mockRestore()
+  })
+
+  it('passes when Ollama model is available', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [{ name: 'llama3:latest' }] }) })
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).resolves.toBeUndefined()
+    expect(process.exit).not.toHaveBeenCalled()
     exitSpy.mockRestore()
   })
 })

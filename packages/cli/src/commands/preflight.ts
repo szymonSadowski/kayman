@@ -28,16 +28,26 @@ export async function runPreflightChecks(config: Config): Promise<void> {
   // 3. AI provider (async)
   if (config.aiProvider === 'ollama') {
     const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
+    const modelName = config.aiModel
+    const normalizedModel = modelName.includes(':') ? modelName : `${modelName}:latest`
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 3000)
+    let models: string[] = []
     try {
       const res = await fetch(baseURL + '/api/tags', { signal: controller.signal })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = (await res.json()) as { models: { name: string }[] }
+      models = data.models.map((m) => m.name)
     } catch {
       process.stderr.write(error(`Ollama not reachable at ${baseURL}. Start Ollama first.`) + '\n')
       process.exit(1)
     } finally {
       clearTimeout(timeout)
+    }
+    const modelFound = models.some((m) => m === modelName || m === normalizedModel)
+    if (!modelFound) {
+      process.stderr.write(error(`Ollama model "${modelName}" not available. Run: kayman verify to set up.`) + '\n')
+      process.exit(1)
     }
   } else {
     try {

@@ -17,6 +17,15 @@ vi.mock('../pipeline/provider.js', () => ({
   createProviderModel: vi.fn(),
 }))
 
+const spawnSyncMock = vi.hoisted(() => vi.fn())
+vi.mock('child_process', () => ({ spawnSync: spawnSyncMock }))
+
+const confirmMock = vi.hoisted(() => vi.fn())
+vi.mock('@inquirer/confirm', () => ({ default: confirmMock }))
+
+const fetchMock = vi.hoisted(() => vi.fn())
+vi.stubGlobal('fetch', fetchMock)
+
 import { loadConfig } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { verifyCommand } from './verify.js'
@@ -37,10 +46,27 @@ const mockConfig: Config = {
   whisperModelPath: undefined,
 }
 
+const ollamaConfig: Config = {
+  userName: 'Test',
+  aiProvider: 'ollama',
+  aiModel: 'llama3.2',
+  aiApiKey: '',
+  notionToken: 'tok',
+  notionDatabaseId: 'db',
+  projects: [],
+  audioSource: 'system_and_mic',
+  whisperBinaryPath: undefined,
+  whisperModelPath: undefined,
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+  fetchMock.mockResolvedValue({
+    ok: true,
+    json: async () => ({ models: [{ name: 'llama3.2:latest' }] }),
+  })
 })
 
 afterEach(() => {
@@ -156,6 +182,79 @@ describe('verifyCommand', () => {
     // All checks ran
     expect(calls.filter(c => c.includes('[err]')).length).toBeGreaterThanOrEqual(3)
     expect(calls.filter(c => c.includes('[ok]')).length).toBeGreaterThanOrEqual(1) // config passed
+    exitSpy.mockRestore()
+  })
+})
+
+describe('verifyCommand — Ollama provider', () => {
+  beforeEach(() => {
+    vi.mocked(loadConfig).mockReturnValue(ollamaConfig)
+    vi.spyOn(fs, 'accessSync').mockReturnValue(undefined)
+  })
+
+  it('passes when Ollama model is already pulled', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ models: [{ name: 'llama3.2:latest' }] }),
+    })
+    vi.mocked(Client).mockImplementation(() => ({
+      databases: { retrieve: vi.fn().mockResolvedValue({}) },
+    }) as unknown as InstanceType<typeof Client>)
+
+    await verifyCommand(ollamaConfig)
+
+    const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
+    expect(calls.some(c => c.includes('[ok] AI provider'))).toBe(true)
+    expect(calls.some(c => c.includes('llama3.2'))).toBe(true)
+  })
+
+  it('pulls model and passes when user confirms Y', async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ models: [] }) }) // initial check: not found
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ models: [{ name: 'llama3.2:latest' }] }) }) // after pull
+    confirmMock.mockResolvedValue(true)
+    spawnSyncMock.mockReturnValue({ status: 0 })
+    vi.mocked(Client).mockImplementation(() => ({
+      databases: { retrieve: vi.fn().mockResolvedValue({}) },
+    }) as unknown as InstanceType<typeof Client>)
+
+    await verifyCommand(ollamaConfig)
+
+    expect(spawnSyncMock).toHaveBeenCalledWith('ollama', ['pull', 'llama3.2'], { stdio: 'inherit' })
+    const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
+    expect(calls.some(c => c.includes('[ok] AI provider'))).toBe(true)
+  })
+
+  it('fails with guidance when user declines pull', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [] }) })
+    confirmMock.mockResolvedValue(false)
+    vi.mocked(Client).mockImplementation(() => ({
+      databases: { retrieve: vi.fn().mockResolvedValue({}) },
+    }) as unknown as InstanceType<typeof Client>)
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(verifyCommand(ollamaConfig)).rejects.toThrow('exit')
+
+    const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
+    expect(calls.some(c => c.includes('[err] AI provider'))).toBe(true)
+    expect(calls.some(c => c.includes('Model not pulled'))).toBe(true)
+    expect(calls.some(c => c.includes('ollama pull llama3.2'))).toBe(true)
+    exitSpy.mockRestore()
+  })
+
+  it('fails with install guidance when Ollama is not reachable', async () => {
+    fetchMock.mockRejectedValue(new Error('ECONNREFUSED'))
+    vi.mocked(Client).mockImplementation(() => ({
+      databases: { retrieve: vi.fn().mockResolvedValue({}) },
+    }) as unknown as InstanceType<typeof Client>)
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(verifyCommand(ollamaConfig)).rejects.toThrow('exit')
+
+    const calls = vi.mocked(process.stdout.write).mock.calls.map(c => c[0] as string)
+    expect(calls.some(c => c.includes('[err] AI provider'))).toBe(true)
+    expect(calls.some(c => c.includes('Ollama not found'))).toBe(true)
+    expect(calls.some(c => c.includes('https://ollama.com'))).toBe(true)
     exitSpy.mockRestore()
   })
 })
