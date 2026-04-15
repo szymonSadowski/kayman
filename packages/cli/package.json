@@ -16,6 +16,7 @@
     "@ai-sdk/google": "^3.0.58",
     "@ai-sdk/openai": "^3.0.50",
     "@inquirer/confirm": "^6.0.11",
+    "@inquirer/input": "^5.0.11",
     "@inquirer/select": "^5.1.2",
     "@kayman/shared": "workspace:*",
     "@notionhq/client": "^5.16.0",
