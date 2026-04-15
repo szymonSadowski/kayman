@@ -133,6 +133,16 @@ describe('runPreflightChecks', () => {
     exitSpy.mockRestore()
   })
 
+  it('warns and proceeds when AI provider has DNS/network error', async () => {
+    generateTextMock.mockRejectedValue(new Error('ENOTFOUND api.openai.com'))
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(mockConfig)).resolves.toBeUndefined()
+    expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('AI provider check timed out'))
+    expect(process.exit).not.toHaveBeenCalled()
+    exitSpy.mockRestore()
+  })
+
   it('exits 1 when Notion auth fails', async () => {
     retrieveMock.mockRejectedValue(new Error('Unauthorized'))
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
