@@ -290,6 +290,99 @@ describe('runSummarize', () => {
   })
 })
 
+describe('runSummarize Ollama error handling', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  const ollamaConfig: Config = {
+    userName: 'Szymon',
+    aiProvider: 'ollama',
+    aiModel: 'llama3.2',
+    notionToken: 'secret_test',
+    notionDatabaseId: 'db-123',
+    projects: [],
+    audioSource: 'system_and_mic',
+  }
+
+  it('throws PipelineError with "Ollama not reachable" when ECONNREFUSED', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    const connErr = new Error('fetch failed') as Error & { cause?: Error }
+    connErr.cause = new Error('connect ECONNREFUSED 127.0.0.1:11434')
+    vi.mocked(ai.generateText).mockRejectedValue(connErr)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await expect(
+      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: ollamaConfig }),
+    ).rejects.toThrow('Ollama not reachable at http://localhost:11434')
+  })
+
+  it('throws PipelineError with model not found when 404 model error', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockRejectedValue(new Error("model 'llama3.2' not found, try pulling it first"))
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await expect(
+      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: ollamaConfig }),
+    ).rejects.toThrow("Model 'llama3.2' not found in Ollama. Run: ollama pull llama3.2")
+  })
+
+  it('uses custom aiBaseUrl in Ollama not reachable error message', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    const connErr = new Error('fetch failed') as Error & { cause?: Error }
+    connErr.cause = new Error('connect ECONNREFUSED 192.168.1.10:11434')
+    vi.mocked(ai.generateText).mockRejectedValue(connErr)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await expect(
+      runSummarize({
+        transcriptPath: '/tmp/audio.txt',
+        project: null,
+        recordingDir: '/tmp',
+        config: { ...ollamaConfig, aiBaseUrl: 'http://192.168.1.10:11434' },
+      }),
+    ).rejects.toThrow('Ollama not reachable at http://192.168.1.10:11434')
+  })
+
+  it('throws PipelineError with "Ollama not reachable" when ECONNRESET', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockRejectedValue(new Error('read ECONNRESET'))
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await expect(
+      runSummarize({ transcriptPath: '/tmp/audio.txt', project: null, recordingDir: '/tmp', config: ollamaConfig }),
+    ).rejects.toThrow('Ollama not reachable at http://localhost:11434')
+  })
+})
+
 describe('buildPrompt', () => {
   it('returns custom template + transcript when promptTemplate is provided', () => {
     const result = buildPrompt('my transcript', 'Custom template.')

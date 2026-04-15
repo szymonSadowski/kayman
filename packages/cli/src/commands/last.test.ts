@@ -137,6 +137,17 @@ describe('lastCommand', () => {
     }
   })
 
+  it('reads only local files — makes no network calls', async () => {
+    const summaryPath = writeSummary('summary-offline.json', mockSummary)
+    writePointer(summaryPath)
+
+    const fetchSpy = vi.spyOn(global, 'fetch')
+    await lastCommand(mockConfig)
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    fetchSpy.mockRestore()
+  })
+
   it('renders project as "memo" when summary.project is null', async () => {
     const memoSummary: Summary = { ...mockSummary, project: null, title: 'Quick Note' }
     const summaryPath = writeSummary('summary-memo.json', memoSummary)

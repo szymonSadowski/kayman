@@ -23,10 +23,10 @@ const COMMAND_GROUPS: Array<{ group: string; commands: Array<{ name: string; des
     commands: [
       { name: 'verify',     desc: 'Validate kayman setup and dependencies' },
       { name: 'completion', desc: 'Install shell tab completion for project names' },
-      { name: 'config',     desc: 'Manage kayman configuration (coming soon)' },
-      { name: 'models',     desc: 'List available AI models (coming soon)' },
-      { name: 'offline',    desc: 'Switch to offline mode (coming soon)' },
-      { name: 'online',     desc: 'Switch back to online mode (coming soon)' },
+      { name: 'config',     desc: 'View and edit kayman configuration (list, get, set, path)' },
+      { name: 'models',     desc: 'Manage local whisper models (list, download, remove)' },
+      { name: 'offline',    desc: 'Switch to offline mode (local AI via Ollama)' },
+      { name: 'online',     desc: 'Switch back to online mode (cloud AI)' },
     ],
   },
   {
@@ -155,6 +155,78 @@ ${bold('Options:')}
 ${bold('Examples:')}
   kayman completion install
   kayman completion install zsh
+`.trim(),
+
+  models: () => `
+${bold('kayman models')} — Manage local whisper models
+
+${bold('Usage:')}  kayman models [list]
+        kayman models download <model>
+        kayman models remove <model>
+
+${bold('Subcommands:')}
+  list             Show available models with download status and size
+  download <model> Download a whisper model to ~/.cache/whisper/
+  remove <model>   Remove a downloaded model
+
+${bold('Models:')}  tiny (75 MB), base (142 MB), small (466 MB), medium (1.5 GB), large (2.9 GB)
+
+${bold('Examples:')}
+  kayman models list
+  kayman models download base
+  kayman models remove large
+`.trim(),
+
+  config: () => `
+${bold('kayman config')} — View and edit kayman configuration
+
+${bold('Usage:')}  kayman config list
+        kayman config get <key>
+        kayman config set <key> <value>
+        kayman config path
+
+${bold('Subcommands:')}
+  list             Print all config values (sensitive fields masked)
+  get <key>        Print a single config value (unmasked)
+  set <key> <val>  Update a config field
+  path             Print the path to the config file
+
+${bold('Examples:')}
+  kayman config list
+  kayman config get ai_provider
+  kayman config set ai_provider ollama
+  kayman config set user_name "Szymon Sadowski"
+  kayman config path
+`.trim(),
+
+  offline: () => `
+${bold('kayman offline')} — Switch to offline mode (local AI)
+
+${bold('Usage:')}  kayman offline [--model <name>]
+
+${bold('Options:')}
+  --model <name>       Local Ollama model to use (default: llama3.2)
+
+${bold('What it does:')}
+  Saves your current cloud AI settings to ~/.config/kayman/.online-config,
+  then switches ai_provider to ollama. Run "kayman online" to restore.
+
+${bold('Examples:')}
+  kayman offline
+  kayman offline --model mistral
+`.trim(),
+
+  online: () => `
+${bold('kayman online')} — Switch back to online mode (cloud AI)
+
+${bold('Usage:')}  kayman online
+
+${bold('What it does:')}
+  Restores cloud AI settings from ~/.config/kayman/.online-config snapshot.
+  If no snapshot exists, prompts interactively for provider, model, and API key.
+
+${bold('Examples:')}
+  kayman online
 `.trim(),
 
   help: () => `

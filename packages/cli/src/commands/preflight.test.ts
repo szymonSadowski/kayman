@@ -45,10 +45,20 @@ const mockConfig: Config = {
   audioSource: 'system_and_mic',
 }
 
+const ollamaConfig: Config = {
+  ...mockConfig,
+  aiProvider: 'ollama',
+  aiModel: 'llama3',
+  aiApiKey: '',
+}
+
 const mockConfigWithModel: Config = {
   ...mockConfig,
   whisperModelPath: '/path/to/model.bin',
 }
+
+const fetchMock = vi.hoisted(() => vi.fn())
+vi.stubGlobal('fetch', fetchMock)
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -56,6 +66,7 @@ beforeEach(() => {
   createProviderModelMock.mockReturnValue({})
   generateTextMock.mockResolvedValue({ text: 'OK' })
   retrieveMock.mockResolvedValue({ id: 'db' })
+  fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [{ name: 'llama3:latest' }] }) })
   vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 })
@@ -159,6 +170,47 @@ describe('runPreflightChecks', () => {
 
     await expect(runPreflightChecks(mockConfig)).resolves.toBeUndefined()
     expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining('Notion check timed out'))
+    expect(process.exit).not.toHaveBeenCalled()
+    exitSpy.mockRestore()
+  })
+
+  it('skips Notion check when aiProvider is ollama', async () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).resolves.toBeUndefined()
+
+    expect(retrieveMock).not.toHaveBeenCalled()
+    expect(process.exit).not.toHaveBeenCalled()
+    exitSpy.mockRestore()
+  })
+
+  it('exits 1 when Ollama is not reachable', async () => {
+    fetchMock.mockRejectedValue(new Error('ECONNREFUSED'))
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).rejects.toThrow('exit')
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('Ollama not reachable'))
+    expect(process.exit).toHaveBeenCalledWith(1)
+    exitSpy.mockRestore()
+  })
+
+  it('exits 1 when Ollama model is not pulled', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [] }) })
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).rejects.toThrow('exit')
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('Ollama model "llama3" not available. Run: kayman verify to set up.')
+    )
+    expect(process.exit).toHaveBeenCalledWith(1)
+    exitSpy.mockRestore()
+  })
+
+  it('passes when Ollama model is available', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ models: [{ name: 'llama3:latest' }] }) })
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+
+    await expect(runPreflightChecks(ollamaConfig)).resolves.toBeUndefined()
     expect(process.exit).not.toHaveBeenCalled()
     exitSpy.mockRestore()
   })

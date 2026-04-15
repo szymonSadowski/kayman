@@ -25,36 +25,63 @@ export async function runPreflightChecks(config: Config): Promise<void> {
     }
   }
 
-  // 3. AI provider (async, 5s timeout)
-  try {
-    const model = createProviderModel(config)
+  // 3. AI provider (async)
+  if (config.aiProvider === 'ollama') {
+    const baseURL = config.aiBaseUrl ?? 'http://localhost:11434'
+    const modelName = config.aiModel
+    const normalizedModel = modelName.includes(':') ? modelName : `${modelName}:latest`
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    let models: string[] = []
     try {
-      await generateText({ model, prompt: 'Reply with OK', maxOutputTokens: 1, abortSignal: controller.signal })
+      const res = await fetch(baseURL + '/api/tags', { signal: controller.signal })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = (await res.json()) as { models: { name: string }[] }
+      models = data.models.map((m) => m.name)
+    } catch {
+      process.stderr.write(error(`Ollama not reachable at ${baseURL}. Start Ollama first.`) + '\n')
+      process.exit(1)
     } finally {
       clearTimeout(timeout)
     }
-  } catch (err) {
-    const e = err as Error
-    if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout') || e.message.includes('ENOTFOUND')) {
-      process.stdout.write(warn('AI provider check timed out — proceeding anyway.') + '\n')
-    } else {
-      process.stderr.write(error('AI provider authentication failed. Check ai_api_key in config.yaml.') + '\n')
+    const modelFound = models.some((m) => m === modelName || m === normalizedModel)
+    if (!modelFound) {
+      process.stderr.write(error(`Ollama model "${modelName}" not available. Run: kayman verify to set up.`) + '\n')
       process.exit(1)
+    }
+  } else {
+    try {
+      const model = createProviderModel(config)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+      try {
+        await generateText({ model, prompt: 'Reply with OK', maxOutputTokens: 1, abortSignal: controller.signal })
+      } finally {
+        clearTimeout(timeout)
+      }
+    } catch (err) {
+      const e = err as Error
+      if (e.name === 'AbortError' || e.message.toLowerCase().includes('timeout') || e.message.includes('ENOTFOUND')) {
+        process.stdout.write(warn('AI provider check timed out — proceeding anyway.') + '\n')
+      } else {
+        process.stderr.write(error('AI provider authentication failed. Check ai_api_key in config.yaml.') + '\n')
+        process.exit(1)
+      }
     }
   }
 
-  // 4. Notion (async, 5s timeout via client timeoutMs)
-  try {
-    const notion = new Client({ auth: config.notionToken, timeoutMs: 5000 })
-    await notion.databases.retrieve({ database_id: config.notionDatabaseId })
-  } catch (err) {
-    if (RequestTimeoutError.isRequestTimeoutError(err) || (err as Error).message.includes('ENOTFOUND')) {
-      process.stdout.write(warn('Notion check timed out — proceeding anyway.') + '\n')
-    } else {
-      process.stderr.write(error('Notion access failed. Check notion_token and notion_database_id in config.yaml.') + '\n')
-      process.exit(1)
+  // 4. Notion (async, 5s timeout via client timeoutMs) — skipped for Ollama (offline mode)
+  if (config.aiProvider !== 'ollama') {
+    try {
+      const notion = new Client({ auth: config.notionToken, timeoutMs: 5000 })
+      await notion.databases.retrieve({ database_id: config.notionDatabaseId })
+    } catch (err) {
+      if (RequestTimeoutError.isRequestTimeoutError(err) || (err as Error).message.includes('ENOTFOUND')) {
+        process.stdout.write(warn('Notion check timed out — proceeding anyway.') + '\n')
+      } else {
+        process.stderr.write(error('Notion access failed. Check notion_token and notion_database_id in config.yaml.') + '\n')
+        process.exit(1)
+      }
     }
   }
 }

@@ -20,7 +20,8 @@ export interface Config {
   userName: string
   aiProvider: string
   aiModel: string
-  aiApiKey: string
+  aiApiKey?: string
+  aiBaseUrl?: string
   notionToken: string
   notionDatabaseId: string
   projects: Array<{ name: string; notionPageId: string; promptTemplate?: string }>

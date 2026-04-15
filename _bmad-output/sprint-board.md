@@ -6,33 +6,23 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 📝 Ready for Dev
 
-### Epic 5: Error Handling & CLI UX
+### Epic 6: Local-First Mode & CLI Config
 
-- [ ] **5.1** CLI Output Styling & Branding — [spec](implementation-artifacts/5-1-cli-output-styling-and-branding.md)
+_(none)_
 
 ---
 
 ## 🔲 Todo
 
-### Epic 5: Error Handling & CLI UX
-
-- [ ] **5.2** Audio Capture Failure Recovery
-- [ ] **5.3** Early Validation — Fail Fast on Missing Dependencies
-- [ ] **5.4** Per-Project AI Prompt Templates
-- [ ] **5.5** `kayman help` — Interactive Command Guide
-
 ### Epic 6: Local-First Mode & CLI Config
 
-- [ ] **6.1** Ollama Provider Support
-- [ ] **6.2** Local Whisper Model Management
-- [ ] **6.3** Offline-Ready Pipeline
-- [ ] **6.4** Ollama Auto-Pull
-- [ ] **6.5** `kayman config` — CLI Config Editor
-- [ ] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle
+_(none)_
 
 ---
 
-## 🔄 In Progress
+## 🔄 In Progress — Awaiting Review
+
+### Epic 6: Local-First Mode & CLI Config
 
 _(none)_
 
@@ -65,6 +55,15 @@ _(none)_
 - [x] **3.8** `kayman retry` — Re-export Failed Notion Exports
 - [x] **3.9** `kayman verify` — Health Check / Setup Validation
 
+### Epic 6: Local-First Mode & CLI Config
+
+- [x] **6.1** Ollama Provider Support — [spec](implementation-artifacts/6-1-ollama-provider-support.md)
+- [x] **6.2** Local Whisper Model Management — [spec](implementation-artifacts/6-2-local-whisper-model-management.md)
+- [x] **6.3** Offline-Ready Pipeline — [spec](implementation-artifacts/6-3-offline-ready-pipeline.md)
+- [x] **6.4** Ollama Auto-Pull — [spec](implementation-artifacts/6-4-ollama-auto-pull.md)
+- [x] **6.5** `kayman config` — CLI Config Editor — [spec](implementation-artifacts/6-5-kayman-config-cli-editor.md)
+- [x] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle — [spec](implementation-artifacts/6-6-offline-online-mode-toggle.md)
+
 ### Epic 4: Summary Access & Raycast Integration
 
 - [x] **4.1** `kayman last` — Terminal Summary Access — [spec](implementation-artifacts/4-1-kayman-last.md)
@@ -72,6 +71,14 @@ _(none)_
 - [x] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status — [spec](implementation-artifacts/4-3-raycast-commands.md)
 - [x] **4.4** Menu Bar Recording Indicator — [spec](implementation-artifacts/4-4-menu-bar-indicator.md)
 - [x] **4.5** Shell Tab Completion — [spec](implementation-artifacts/4-5-shell-completion.md)
+
+### Epic 5: Error Handling & CLI UX
+
+- [x] **5.1** CLI Output Styling & Branding — [spec](implementation-artifacts/5-1-cli-output-styling-and-branding.md)
+- [x] **5.2** Audio Capture Failure Recovery — [spec](implementation-artifacts/5-2-audio-capture-failure-recovery.md)
+- [x] **5.3** Early Validation — Fail Fast on Missing Dependencies — [spec](implementation-artifacts/5-3-early-validation-fail-fast.md)
+- [x] **5.4** Per-Project AI Prompt Templates — [spec](implementation-artifacts/5-4-per-project-ai-prompt-templates.md)
+- [x] **5.5** `kayman help` — Interactive Command Guide — [spec](implementation-artifacts/5-5-kayman-help-interactive-guide.md)
 
 ---
 

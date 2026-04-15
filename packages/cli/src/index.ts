@@ -12,6 +12,10 @@ import { listCommand } from './commands/list'
 import { retryCommand } from './commands/retry'
 import { verifyCommand } from './commands/verify'
 import { helpCommand } from './commands/help'
+import { modelsCommand } from './commands/models'
+import { configCommand } from './commands/config-command'
+import { offlineCommand } from './commands/offline'
+import { onlineCommand } from './commands/online'
 
 const program = new Command()
   .name('kayman')
@@ -29,7 +33,7 @@ let config: Config
 
 // Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (['completion', 'verify', 'help'].includes(actionCommand.name())) return
+  if (['completion', 'verify', 'help', 'config', 'offline', 'online'].includes(actionCommand.name())) return
   try {
     config = loadConfig()
   } catch (err) {
@@ -115,6 +119,37 @@ program
   .description('Show command help')
   .action(async (cmd?: string) => {
     await helpCommand(cmd)
+  })
+
+program
+  .command('config [subcommand] [args...]')
+  .description('View and edit kayman configuration')
+  .action(async (subcommand?: string, args?: string[]) => {
+    const all = [subcommand, ...(args ?? [])].filter((x): x is string => x !== undefined)
+    await configCommand(all)
+  })
+
+program
+  .command('models [subcommand] [model]')
+  .description('Manage local whisper models (list, download, remove)')
+  .action(async (subcommand?: string, model?: string) => {
+    const args = [subcommand, model].filter((x): x is string => x !== undefined)
+    await modelsCommand(args, config)
+  })
+
+program
+  .command('offline')
+  .description('Switch to offline mode (local AI)')
+  .option('--model <name>', 'Local model to use (default: llama3.2)')
+  .action(async (opts: { model?: string }) => {
+    await offlineCommand(opts)
+  })
+
+program
+  .command('online')
+  .description('Switch back to online mode (cloud AI)')
+  .action(async () => {
+    await onlineCommand()
   })
 
 program.action(async () => {

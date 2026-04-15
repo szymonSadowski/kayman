@@ -136,6 +136,67 @@ projects:
     expect(config.projects[0].promptTemplate).toBe('')
   })
 
+  it('loads config with ollama provider without ai_api_key', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: ollama
+ai_model: llama3.2
+notion_token: secret
+notion_database_id: abc
+`,
+    )
+    const config = loadConfig(configPath)
+    expect(config.aiProvider).toBe('ollama')
+    expect(config.aiApiKey).toBeUndefined()
+  })
+
+  it('throws when non-ollama provider has no ai_api_key', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: openai
+ai_model: gpt-4o
+notion_token: secret
+notion_database_id: abc
+`,
+    )
+    expect(() => loadConfig(configPath)).toThrow('Config error: ai_api_key is required')
+  })
+
+  it('parses ai_base_url for ollama provider', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: ollama
+ai_model: llama3.2
+ai_base_url: http://192.168.1.10:11434
+notion_token: secret
+notion_database_id: abc
+`,
+    )
+    const config = loadConfig(configPath)
+    expect(config.aiBaseUrl).toBe('http://192.168.1.10:11434')
+  })
+
+  it('returns undefined aiBaseUrl when ai_base_url not set', () => {
+    fs.writeFileSync(
+      configPath,
+      `
+user_name: Szymon
+ai_provider: ollama
+ai_model: llama3.2
+notion_token: secret
+notion_database_id: abc
+`,
+    )
+    const config = loadConfig(configPath)
+    expect(config.aiBaseUrl).toBeUndefined()
+  })
+
   it('throws on non-string prompt_template value', () => {
     fs.writeFileSync(
       configPath,
