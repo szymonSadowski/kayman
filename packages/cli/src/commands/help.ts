@@ -25,8 +25,8 @@ const COMMAND_GROUPS: Array<{ group: string; commands: Array<{ name: string; des
       { name: 'completion', desc: 'Install shell tab completion for project names' },
       { name: 'config',     desc: 'View and edit kayman configuration (list, get, set, path)' },
       { name: 'models',     desc: 'Manage local whisper models (list, download, remove)' },
-      { name: 'offline',    desc: 'Switch to offline mode (coming soon)' },
-      { name: 'online',     desc: 'Switch back to online mode (coming soon)' },
+      { name: 'offline',    desc: 'Switch to offline mode (local AI via Ollama)' },
+      { name: 'online',     desc: 'Switch back to online mode (cloud AI)' },
     ],
   },
   {
@@ -197,6 +197,36 @@ ${bold('Examples:')}
   kayman config set ai_provider ollama
   kayman config set user_name "Szymon Sadowski"
   kayman config path
+`.trim(),
+
+  offline: () => `
+${bold('kayman offline')} — Switch to offline mode (local AI)
+
+${bold('Usage:')}  kayman offline [--model <name>]
+
+${bold('Options:')}
+  --model <name>       Local Ollama model to use (default: llama3.2)
+
+${bold('What it does:')}
+  Saves your current cloud AI settings to ~/.config/kayman/.online-config,
+  then switches ai_provider to ollama. Run "kayman online" to restore.
+
+${bold('Examples:')}
+  kayman offline
+  kayman offline --model mistral
+`.trim(),
+
+  online: () => `
+${bold('kayman online')} — Switch back to online mode (cloud AI)
+
+${bold('Usage:')}  kayman online
+
+${bold('What it does:')}
+  Restores cloud AI settings from ~/.config/kayman/.online-config snapshot.
+  If no snapshot exists, prompts interactively for provider, model, and API key.
+
+${bold('Examples:')}
+  kayman online
 `.trim(),
 
   help: () => `

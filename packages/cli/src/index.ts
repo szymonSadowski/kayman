@@ -14,6 +14,8 @@ import { verifyCommand } from './commands/verify'
 import { helpCommand } from './commands/help'
 import { modelsCommand } from './commands/models'
 import { configCommand } from './commands/config-command'
+import { offlineCommand } from './commands/offline'
+import { onlineCommand } from './commands/online'
 
 const program = new Command()
   .name('kayman')
@@ -31,7 +33,7 @@ let config: Config
 
 // Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (['completion', 'verify', 'help', 'config'].includes(actionCommand.name())) return
+  if (['completion', 'verify', 'help', 'config', 'offline', 'online'].includes(actionCommand.name())) return
   try {
     config = loadConfig()
   } catch (err) {
@@ -133,6 +135,21 @@ program
   .action(async (subcommand?: string, model?: string) => {
     const args = [subcommand, model].filter((x): x is string => x !== undefined)
     await modelsCommand(args, config)
+  })
+
+program
+  .command('offline')
+  .description('Switch to offline mode (local AI)')
+  .option('--model <name>', 'Local model to use (default: llama3.2)')
+  .action(async (opts: { model?: string }) => {
+    await offlineCommand(opts)
+  })
+
+program
+  .command('online')
+  .description('Switch back to online mode (cloud AI)')
+  .action(async () => {
+    await onlineCommand()
   })
 
 program.action(async () => {

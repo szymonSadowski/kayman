@@ -13,3 +13,15 @@ export function setConfigValue(key: string, value: string): void {
   fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true })
   fs.writeFileSync(CONFIG_PATH, updated, 'utf8')
 }
+
+export function setConfigValues(values: Record<string, string>): void {
+  let updated = fs.existsSync(CONFIG_PATH) ? fs.readFileSync(CONFIG_PATH, 'utf8') : ''
+  for (const [key, value] of Object.entries(values)) {
+    const keyRegex = new RegExp(`^${key}:.*`, 'm')
+    updated = keyRegex.test(updated)
+      ? updated.replace(keyRegex, `${key}: ${value}`)
+      : updated + `\n${key}: ${value}\n`
+  }
+  fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true })
+  fs.writeFileSync(CONFIG_PATH, updated, 'utf8')
+}

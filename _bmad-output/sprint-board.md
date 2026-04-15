@@ -16,8 +16,7 @@ _(none)_
 
 ### Epic 6: Local-First Mode & CLI Config
 
-- [ ] **6.5** `kayman config` — CLI Config Editor
-- [ ] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle
+_(none)_
 
 ---
 
@@ -62,6 +61,8 @@ _(none)_
 - [x] **6.2** Local Whisper Model Management — [spec](implementation-artifacts/6-2-local-whisper-model-management.md)
 - [x] **6.3** Offline-Ready Pipeline — [spec](implementation-artifacts/6-3-offline-ready-pipeline.md)
 - [x] **6.4** Ollama Auto-Pull — [spec](implementation-artifacts/6-4-ollama-auto-pull.md)
+- [x] **6.5** `kayman config` — CLI Config Editor — [spec](implementation-artifacts/6-5-kayman-config-cli-editor.md)
+- [x] **6.6** `kayman offline` / `kayman online` — Quick Mode Toggle — [spec](implementation-artifacts/6-6-offline-online-mode-toggle.md)
 
 ### Epic 4: Summary Access & Raycast Integration
 
