@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import fs from 'fs'
 
 vi.mock('./config-writer.js', () => ({
   CONFIG_PATH: '/mock/.config/kayman/config.yaml',
