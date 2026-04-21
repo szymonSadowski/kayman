@@ -41,6 +41,7 @@ async function run(): Promise<void> {
       project,
       recordingDir: transcriptSaveDir,
       config,
+      isMemo: project === null || tags.includes('memo'),
     })
 
     const summaryPath = path.join(transcriptSaveDir, 'summary.json')
