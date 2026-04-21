@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PipelineError, PipelineStage } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
-import { buildPrompt } from './summarize.js'
+import { buildPrompt, calculateCost } from './summarize.js'
 
 vi.mock('fs')
 vi.mock('ai')
@@ -595,5 +595,123 @@ describe('runSummarize with promptTemplate', () => {
 
     expect(result.fullSummary).not.toContain('**Full Transcript:**')
     expect(result.fullSummary).toBe(validAiOutput.fullSummary)
+  })
+})
+
+describe('calculateCost', () => {
+  it('returns 0 for ollama regardless of model', () => {
+    expect(calculateCost('ollama', 'llama3.2', { inputTokens: 1000, outputTokens: 500 })).toBe(0)
+  })
+
+  it('returns 0 for ollama when usage is undefined', () => {
+    expect(calculateCost('ollama', 'llama3.2', undefined)).toBe(0)
+  })
+
+  it('calculates correct cost for known model', () => {
+    // gpt-4o: input $2.50/M, output $10.00/M
+    // 1000 input tokens = 0.0025, 500 output tokens = 0.005 → 0.0075
+    const cost = calculateCost('openai', 'gpt-4o', { inputTokens: 1000, outputTokens: 500 })
+    expect(cost).toBe(0.0075)
+  })
+
+  it('returns undefined for unknown model', () => {
+    expect(calculateCost('openai', 'gpt-99-ultra', { inputTokens: 1000, outputTokens: 500 })).toBeUndefined()
+  })
+
+  it('returns undefined when usage is undefined for non-ollama provider', () => {
+    expect(calculateCost('openai', 'gpt-4o', undefined)).toBeUndefined()
+  })
+})
+
+describe('runSummarize cost field', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  const mockConfigOpenAI: Config = {
+    userName: 'Szymon',
+    aiProvider: 'openai',
+    aiModel: 'gpt-4o',
+    aiApiKey: 'sk-test',
+    notionToken: 'secret_test',
+    notionDatabaseId: 'db-123',
+    projects: [],
+    audioSource: 'system_and_mic',
+  }
+
+  const ollamaConfig: Config = {
+    userName: 'Szymon',
+    aiProvider: 'ollama',
+    aiModel: 'llama3.2',
+    notionToken: 'secret_test',
+    notionDatabaseId: 'db-123',
+    projects: [],
+    audioSource: 'system_and_mic',
+  }
+
+  const validOutput = {
+    title: 'T', tldr: 'S', keyPoints: [], fullSummary: 'F',
+  }
+
+  it('sets summary.cost from token usage for known model', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript content')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({
+      output: validOutput,
+      usage: { inputTokens: 1000, outputTokens: 500 },
+    } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({ transcriptPath: '/tmp/t.txt', project: null, recordingDir: '/tmp', config: mockConfigOpenAI })
+
+    // gpt-4o: 1000 input @ $2.50/M + 500 output @ $10.00/M = 0.0025 + 0.005 = 0.0075
+    expect(result.cost).toBe(0.0075)
+  })
+
+  it('sets summary.cost to undefined for unknown model', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({
+      output: validOutput,
+      usage: { inputTokens: 1000, outputTokens: 500 },
+    } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const unknownModelConfig: Config = { ...mockConfigOpenAI, aiModel: 'gpt-99-ultra' }
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({ transcriptPath: '/tmp/t.txt', project: null, recordingDir: '/tmp', config: unknownModelConfig })
+
+    expect(result.cost).toBeUndefined()
+  })
+
+  it('sets summary.cost to 0 for ollama provider', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({
+      output: validOutput,
+      usage: { inputTokens: 0, outputTokens: 0 },
+    } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    const result = await runSummarize({ transcriptPath: '/tmp/t.txt', project: null, recordingDir: '/tmp', config: ollamaConfig })
+
+    expect(result.cost).toBe(0)
   })
 })

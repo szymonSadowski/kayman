@@ -10,7 +10,7 @@ Update story status by moving it between sections. Each story is designed for a 
 
 - [x] **C3** Memo Auto-Tag and Focused Prompt — [spec](implementation-artifacts/c3-memo-auto-tag-focused-prompt.md)
 - [ ] **C4** CLI Docs — [spec](implementation-artifacts/c4-cli-docs.md)
-- [ ] **C5** AI Cost Tracking — Price Column in Notion — [spec](implementation-artifacts/c5-ai-cost-tracking-notion.md)
+- [x] **C5** AI Cost Tracking — Price Column in Notion — [spec](implementation-artifacts/c5-ai-cost-tracking-notion.md)
 
 ### Epic: Raycast Improvements
 

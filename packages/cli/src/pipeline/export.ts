@@ -44,6 +44,9 @@ async function createPage(notion: Client, config: Config, summary: Summary, tags
       ...(tags.length > 0 && {
         Tags: { multi_select: tags.map((t) => ({ name: t })) },
       }),
+      ...(summary.cost !== undefined && {
+        Price: { number: summary.cost },
+      }),
     },
     children: [
       {
