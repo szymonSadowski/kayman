@@ -6,6 +6,34 @@ import { applySpotlight, PipelineError, PipelineStage } from '@kayman/shared'
 import { createProviderModel } from './provider'
 import type { Config, Summary } from '@kayman/shared'
 
+// Prices in USD per million tokens. Last verified: 2026-04.
+const MODEL_PRICING: Record<string, { inputPerMToken: number; outputPerMToken: number }> = {
+  'gpt-4o':                     { inputPerMToken: 2.50,  outputPerMToken: 10.00 },
+  'gpt-4o-mini':                { inputPerMToken: 0.15,  outputPerMToken: 0.60  },
+  'gpt-4-turbo':                { inputPerMToken: 10.00, outputPerMToken: 30.00 },
+  'gpt-3.5-turbo':              { inputPerMToken: 0.50,  outputPerMToken: 1.50  },
+  'claude-opus-4-7':            { inputPerMToken: 15.00, outputPerMToken: 75.00 },
+  'claude-sonnet-4-6':          { inputPerMToken: 3.00,  outputPerMToken: 15.00 },
+  'claude-haiku-4-5-20251001':  { inputPerMToken: 0.80,  outputPerMToken: 4.00  },
+  'gemini-2.0-flash':           { inputPerMToken: 0.10,  outputPerMToken: 0.40  },
+  'gemini-1.5-pro':             { inputPerMToken: 1.25,  outputPerMToken: 5.00  },
+  'gemini-1.5-flash':           { inputPerMToken: 0.075, outputPerMToken: 0.30  },
+}
+
+export function calculateCost(
+  provider: string,
+  model: string,
+  usage: { inputTokens?: number; outputTokens?: number } | undefined,
+): number | undefined {
+  if (provider === 'ollama') return 0
+  if (!usage) return undefined
+  const pricing = MODEL_PRICING[model]
+  if (!pricing) return undefined
+  const inputCost = ((usage.inputTokens ?? 0) / 1_000_000) * pricing.inputPerMToken
+  const outputCost = ((usage.outputTokens ?? 0) / 1_000_000) * pricing.outputPerMToken
+  return Math.round((inputCost + outputCost) * 1_000_000) / 1_000_000
+}
+
 const summarySchema = z.object({
   title: z.string(),
   tldr: z.string(),
@@ -89,6 +117,7 @@ export async function runSummarize(input: {
   const model = createProviderModel(config)
 
   let parsed: z.infer<typeof summarySchema>
+  let cost: number | undefined
   try {
     const result = await generateText({
       model,
@@ -96,6 +125,7 @@ export async function runSummarize(input: {
       prompt: buildPrompt(transcript, promptTemplate, isMemo),
     })
     parsed = result.output
+    cost = calculateCost(config.aiProvider, config.aiModel, result.usage)
   } catch (err) {
     if (config.aiProvider === 'ollama') {
       const msg = (err as Error).message ?? ''
@@ -127,6 +157,7 @@ export async function runSummarize(input: {
     project,
     recordedAt: new Date().toISOString(),
     transcriptPath,
+    cost,
   }
 
   const summaryPath = path.join(recordingDir, 'summary.json')

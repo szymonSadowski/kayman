@@ -147,6 +147,48 @@ describe('runExport', () => {
     expect(mockCreate).toHaveBeenCalledTimes(2)
   })
 
+  it('includes Price property when summary.cost is defined', async () => {
+    const { Client } = await import('@notionhq/client')
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const summaryWithCost: Summary = { ...mockSummary, cost: 0.0075 }
+
+    const { runExport } = await import('./export.js')
+    await runExport({ summary: summaryWithCost, config: mockConfig })
+
+    const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
+    expect(callArg.properties['Price']).toEqual({ number: 0.0075 })
+  })
+
+  it('omits Price property when summary.cost is undefined', async () => {
+    const { Client } = await import('@notionhq/client')
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const summaryNoCost: Summary = { ...mockSummary, cost: undefined }
+
+    const { runExport } = await import('./export.js')
+    await runExport({ summary: summaryNoCost, config: mockConfig })
+
+    const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
+    expect(callArg.properties['Price']).toBeUndefined()
+  })
+
+  it('includes Price property when summary.cost is 0 (ollama)', async () => {
+    const { Client } = await import('@notionhq/client')
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'page-id' })
+    vi.mocked(Client).mockImplementation(() => ({ pages: { create: mockCreate } }) as unknown as InstanceType<typeof Client>)
+
+    const ollamaSummary: Summary = { ...mockSummary, cost: 0 }
+
+    const { runExport } = await import('./export.js')
+    await runExport({ summary: ollamaSummary, config: mockConfig })
+
+    const callArg = mockCreate.mock.calls[0][0] as { properties: Record<string, unknown> }
+    expect(callArg.properties['Price']).toEqual({ number: 0 })
+  })
+
   it('throws PipelineError immediately for unknown errors with no status (no retry)', async () => {
     const { Client } = await import('@notionhq/client')
     const unknownError = new Error('Network error')

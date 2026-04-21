@@ -46,4 +46,5 @@ export interface Summary {
   project: string | null
   recordedAt: string
   transcriptPath: string
+  cost?: number
 }
