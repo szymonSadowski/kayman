@@ -25,15 +25,12 @@ const program = new Command()
   .helpOption(false)
 
 program.option('-h, --help', 'Show help')
-program.on('option:help', () => {
-  helpCommand().then(() => process.exit(0))
-})
 
 let config: Config
 
 // Validate config before every command (skip for commands that work without config)
 program.hook('preAction', (_thisCommand, actionCommand) => {
-  if (['completion', 'verify', 'help', 'config', 'offline', 'online'].includes(actionCommand.name())) return
+  if (actionCommand === program || ['completion', 'verify', 'help', 'config', 'offline', 'online'].includes(actionCommand.name())) return
   try {
     config = loadConfig()
   } catch (err) {

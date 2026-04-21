@@ -409,6 +409,25 @@ describe('buildPrompt', () => {
     const result = buildPrompt('my transcript', '  Custom template.  ')
     expect(result).toBe('Custom template.\nTranscript:\nmy transcript')
   })
+
+  it('uses memo prompt when isMemo=true', () => {
+    const result = buildPrompt('my transcript', undefined, true)
+    expect(result).toContain('personal note-taking assistant')
+    expect(result).toContain('my transcript')
+    expect(result).not.toContain('You are an expert summarizer')
+  })
+
+  it('uses default meeting prompt when isMemo=false', () => {
+    const result = buildPrompt('my transcript', undefined, false)
+    expect(result).toContain('You are an expert summarizer')
+    expect(result).not.toContain('personal note-taking assistant')
+  })
+
+  it('custom template wins over isMemo=true', () => {
+    const result = buildPrompt('my transcript', 'Custom template.', true)
+    expect(result).toBe('Custom template.\nTranscript:\nmy transcript')
+    expect(result).not.toContain('personal note-taking assistant')
+  })
 })
 
 describe('runSummarize with promptTemplate', () => {
@@ -482,7 +501,7 @@ describe('runSummarize with promptTemplate', () => {
     expect((call as { prompt: string }).prompt).toContain('You are an expert summarizer')
   })
 
-  it('uses default prompt when project is null (memo)', async () => {
+  it('uses default prompt when project is null and isMemo not set', async () => {
     const fs = await import('fs')
     vi.mocked(fs.readFileSync).mockImplementation(() => 'the transcript')
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
@@ -527,6 +546,25 @@ describe('runSummarize with promptTemplate', () => {
 
     const call = vi.mocked(ai.generateText).mock.calls[0][0]
     expect((call as { prompt: string }).prompt).toContain('You are an expert summarizer')
+  })
+
+  it('uses memo prompt when isMemo=true is passed to runSummarize', async () => {
+    const fs = await import('fs')
+    vi.mocked(fs.readFileSync).mockImplementation(() => 'voice memo transcript')
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined)
+
+    const ai = await import('ai')
+    vi.mocked(ai.generateText).mockResolvedValue({ output: validAiOutput } as Awaited<ReturnType<typeof ai.generateText>>)
+
+    const providerModule = await import('./provider.js')
+    vi.mocked(providerModule.createProviderModel).mockReturnValue('mock-model' as unknown as ReturnType<typeof providerModule.createProviderModel>)
+
+    const { runSummarize } = await import('./summarize.js')
+    await runSummarize({ transcriptPath: '/tmp/t.txt', project: null, recordingDir: '/tmp', config: mockConfig, isMemo: true })
+
+    const call = vi.mocked(ai.generateText).mock.calls[0][0]
+    expect((call as { prompt: string }).prompt).toContain('personal note-taking assistant')
+    expect((call as { prompt: string }).prompt).not.toContain('You are an expert summarizer')
   })
 
   it('does not append full transcript to fullSummary when custom promptTemplate is used (short transcript)', async () => {

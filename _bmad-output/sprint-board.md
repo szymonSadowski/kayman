@@ -6,23 +6,33 @@ Update story status by moving it between sections. Each story is designed for a 
 
 ## 📝 Ready for Dev
 
-### Epic 6: Local-First Mode & CLI Config
+### Epic: CLI Improvements
 
-_(none)_
+- [x] **C3** Memo Auto-Tag and Focused Prompt — [spec](implementation-artifacts/c3-memo-auto-tag-focused-prompt.md)
+- [ ] **C4** CLI Docs — [spec](implementation-artifacts/c4-cli-docs.md)
+- [ ] **C5** AI Cost Tracking — Price Column in Notion — [spec](implementation-artifacts/c5-ai-cost-tracking-notion.md)
+
+### Epic: Raycast Improvements
+
+- [ ] **R1** Tag Support in Raycast Start Command — [spec](implementation-artifacts/r1-raycast-tag-support.md)
+- [ ] **R2** Auto-Updating Menubar Timer — [spec](implementation-artifacts/r2-menubar-auto-update.md)
+- [ ] **R3** Raycast Installation & Usage Docs — [spec](implementation-artifacts/r3-raycast-docs.md)
+
+### Epic: Identity & Branding
+
+- [ ] **B1** CLI ASCII Banner — [spec](implementation-artifacts/b1-cli-ascii-banner.md)
+- [ ] **B2** Raycast Extension Icon — [spec](implementation-artifacts/b2-raycast-extension-icon.md)
+- [ ] **B3** macOS Notification Icon — [spec](implementation-artifacts/b3-macos-notification-icon.md)
 
 ---
 
 ## 🔲 Todo
-
-### Epic 6: Local-First Mode & CLI Config
 
 _(none)_
 
 ---
 
 ## 🔄 In Progress — Awaiting Review
-
-### Epic 6: Local-First Mode & CLI Config
 
 _(none)_
 
@@ -71,6 +81,11 @@ _(none)_
 - [x] **4.3** Raycast Commands — Start, Stop, Last, Memo, Status — [spec](implementation-artifacts/4-3-raycast-commands.md)
 - [x] **4.4** Menu Bar Recording Indicator — [spec](implementation-artifacts/4-4-menu-bar-indicator.md)
 - [x] **4.5** Shell Tab Completion — [spec](implementation-artifacts/4-5-shell-completion.md)
+
+### Epic: CLI Improvements
+
+- [x] **C1** Fix Double Help Output — [spec](implementation-artifacts/c1-fix-double-help-output.md)
+- [x] **C2** Fix "too many arguments" on `offline`, `online`, `models` — [spec](implementation-artifacts/c2-fix-too-many-arguments.md)
 
 ### Epic 5: Error Handling & CLI UX
 

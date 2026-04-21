@@ -13,9 +13,28 @@ const summarySchema = z.object({
   fullSummary: z.string(),
 })
 
-export function buildPrompt(transcript: string, promptTemplate?: string): string {
+const MEMO_PROMPT = `You are a personal note-taking assistant processing a voice memo — a single person thinking out loud.
+
+Analyze the transcript below and return a structured JSON summary with:
+- title: concise title describing the main topic (5-10 words)
+- tldr: one-paragraph summary of the core idea or decision
+- keyPoints: specific points, facts, ideas, or decisions mentioned (actionable where possible)
+- fullSummary: complete structured notes including all details, next steps, and open questions
+
+Rules:
+- This is a solo recording (one speaker). Avoid meeting language like "participants discussed" or "the team agreed".
+- Use first-person friendly language where natural ("decided to", "need to", "the idea is").
+- Extract ALL action items and decisions explicitly.
+- If the speaker mentions open questions or things to research, list them in fullSummary.
+- Focus on substance — do not comment on recording quality or brevity.`
+
+export function buildPrompt(transcript: string, promptTemplate?: string, isMemo = false): string {
   if (promptTemplate && promptTemplate.trim()) {
     return promptTemplate.trim() + '\nTranscript:\n' + transcript
+  }
+
+  if (isMemo) {
+    return MEMO_PROMPT + '\nTranscript:\n' + transcript
   }
 
   const wordCount = transcript.split(/\s+/).length
@@ -43,8 +62,9 @@ export async function runSummarize(input: {
   project: string | null
   recordingDir: string
   config: Config
+  isMemo?: boolean
 }): Promise<Summary> {
-  const { transcriptPath, project, recordingDir, config } = input
+  const { transcriptPath, project, recordingDir, config, isMemo } = input
 
   const transcript = fs.readFileSync(transcriptPath, 'utf8')
 
@@ -73,7 +93,7 @@ export async function runSummarize(input: {
     const result = await generateText({
       model,
       output: Output.object({ schema: summarySchema }),
-      prompt: buildPrompt(transcript, promptTemplate),
+      prompt: buildPrompt(transcript, promptTemplate, isMemo),
     })
     parsed = result.output
   } catch (err) {
