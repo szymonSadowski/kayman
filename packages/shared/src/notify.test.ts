@@ -14,6 +14,8 @@ beforeEach(() => {
 describe('notifyCustom', () => {
   it('calls notifier with title kayman and given message', () => {
     notifyCustom('foo')
-    expect(notifier.notify).toHaveBeenCalledWith({ title: 'kayman', message: 'foo' })
+    expect(notifier.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'kayman', message: 'foo' }),
+    )
   })
 })

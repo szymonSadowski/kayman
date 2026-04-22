@@ -1,6 +1,6 @@
 # Story B3: macOS Notification Icon
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -28,19 +28,17 @@ so that I can immediately identify kayman notifications in my notification cente
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Resolve the absolute path to `kayman.png` in `packages/shared/src/notify.ts` (AC: 2)
-  - [ ] Use `import.meta.url` (ESM) or `__dirname` (CJS) to resolve the path relative to the module file
-  - [ ] Check the build output format for `@kayman/shared` — `tsup` config in `packages/shared/package.json` determines ESM vs CJS
-  - [ ] The asset is at `packages/shared/assets/kayman.png` — after build it should be at `dist/../assets/kayman.png` (relative to compiled output) or copied alongside dist
-  - [ ] See Dev Notes for path resolution strategy
-- [ ] Task 2: Add `contentImage` to all three notify functions (AC: 1, 3, 4)
-  - [ ] In `notify()`: add `contentImage: ICON_PATH` to `notifier.notify(...)` call
-  - [ ] In `notifyCustom()`: add `contentImage: ICON_PATH`
-  - [ ] In `notifyError()`: add `contentImage: ICON_PATH`
-- [ ] Task 3: Ensure asset is accessible at runtime (AC: 1, 2)
-  - [ ] Verify `packages/shared/assets/kayman.png` is NOT excluded from the package
-  - [ ] If `tsup` only outputs `dist/`, confirm the `assets/` folder is sibling to `dist/` and accessible at runtime
-  - [ ] Alternatively: embed the path relative to `node_modules/@kayman/shared/` which is how it's consumed
+- [x] Task 1: Resolve the absolute path to `kayman.png` in `packages/shared/src/notify.ts` (AC: 2)
+  - [x] Added `shims: true` to shared tsup.config.ts so `__dirname` is shimmed for ESM builds
+  - [x] Used `path.resolve(__dirname, '../assets/kayman.png')` — resolves correctly from dist/ to assets/
+  - [x] Added `fs.existsSync` guard so notifications work even if asset is missing
+- [x] Task 2: Add `contentImage` to all three notify functions (AC: 1, 3, 4)
+  - [x] In `notify()`: spread `iconField` (contains `contentImage: ICON_PATH` when asset exists)
+  - [x] In `notifyCustom()`: spread `iconField`
+  - [x] In `notifyError()`: spread `iconField`
+- [x] Task 3: Ensure asset is accessible at runtime (AC: 1, 2)
+  - [x] `packages/shared/assets/kayman.png` is a sibling to `dist/` — accessible at runtime
+  - [x] Path verified: resolves to correct location, fs.existsSync returns true
 
 ## Dev Notes
 
@@ -130,9 +128,19 @@ Story B2 adds `packages/shared/assets/kayman.png` via copying. This story (B3) u
 ## Dev Agent Record
 
 ### Agent Model Used
+claude-sonnet-4-6
 
 ### Debug Log References
+- Dev Notes path `../../assets/kayman.png` was incorrect; corrected to `../assets/kayman.png` (dist/ is one level below package root, not two)
 
 ### Completion Notes List
+- Added `shims: true` to packages/shared/tsup.config.ts for __dirname ESM compatibility
+- Added ICON_PATH and ICON_EXISTS constants to notify.ts using path.resolve(__dirname, '../assets/kayman.png')
+- Spread iconField (contentImage when asset exists) into all three notify functions
+- Updated notify.test.ts to use objectContaining to accommodate new contentImage field
+- All 59 tests pass; builds succeed
 
 ### File List
+- packages/shared/src/notify.ts (modified)
+- packages/shared/src/notify.test.ts (modified)
+- packages/shared/tsup.config.ts (modified)
