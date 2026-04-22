@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { loadConfig, error } from '@kayman/shared'
+import { loadConfig, error, printBanner } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { startCommand } from './commands/start'
 import { stopCommand } from './commands/stop'
@@ -25,6 +25,11 @@ const program = new Command()
   .helpOption(false)
 
 program.option('-h, --help', 'Show help')
+
+const argv = process.argv.slice(2)
+if (!argv.includes('--help') && !argv.includes('-h') && !argv.includes('--version')) {
+  printBanner()
+}
 
 let config: Config
 
