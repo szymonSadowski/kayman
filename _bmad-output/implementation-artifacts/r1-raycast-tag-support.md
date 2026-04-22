@@ -1,6 +1,6 @@
 # Story R1: Tag Support in Raycast Start Command
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -30,20 +30,20 @@ so that my recordings are categorized without switching to the terminal.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add tag input step to `packages/raycast/src/start.tsx` (AC: 1, 2, 3)
-  - [ ] After project selection, show a second view with a `<Form>` containing a `<Form.TextField name="tags" title="Tags" placeholder="daily client (space-separated, optional)" />`
-  - [ ] On form submit: parse tags by splitting on whitespace, filter empty strings
-  - [ ] Build CLI args: if tags non-empty → `['start', project, '--tags', ...tags]`; if empty → `['start', project]`
-  - [ ] Call `runKayman(args)` with the constructed args
-  - [ ] Show success toast with project name (and tag count if tags present)
-- [ ] Task 2: Handle Raycast state flow (AC: 1–3)
-  - [ ] Use `useState` to track `selectedProject: string | null` (null = project list shown, non-null = tag form shown)
-  - [ ] When project selected from list → set `selectedProject`, render `<Form>` for tag input
-  - [ ] When tag form submitted → run `kayman start` and show toast
-  - [ ] When tag form dismissed (Escape) → return to project list (`setSelectedProject(null)`)
-- [ ] Task 3: Verify CLI `--tags` flag compatibility (AC: 2, 4)
-  - [ ] Confirm `kayman start` CLI accepts `--tags tag1 tag2` (multiple space-separated values) — it does, per `index.ts` `.option('--tags <tags...>')`
-  - [ ] When passing via execa: `runKayman(['start', project, '--tags', 'daily', 'client'])` — each tag as separate array element
+- [x] Task 1: Add tag input step to `packages/raycast/src/start.tsx` (AC: 1, 2, 3)
+  - [x] After project selection, show a second view with a `<Form>` containing a `<Form.TextField name="tags" title="Tags" placeholder="daily client (space-separated, optional)" />`
+  - [x] On form submit: parse tags by splitting on whitespace, filter empty strings
+  - [x] Build CLI args: if tags non-empty → `['start', project, '--tags', ...tags]`; if empty → `['start', project]`
+  - [x] Call `runKayman(args)` with the constructed args
+  - [x] Show success toast with project name (and tag count if tags present)
+- [x] Task 2: Handle Raycast state flow (AC: 1–3)
+  - [x] Use `useState` to track `selectedProject: string | null` (null = project list shown, non-null = tag form shown)
+  - [x] When project selected from list → set `selectedProject`, render `<Form>` for tag input
+  - [x] When tag form submitted → run `kayman start` and show toast
+  - [x] When "Back to Projects" action triggered → return to project list (`setSelectedProject(null)`); Escape closes the command entirely (standard Raycast behavior — use `useNavigation` to change this)
+- [x] Task 3: Verify CLI `--tags` flag compatibility (AC: 2, 4)
+  - [x] Confirm `kayman start` CLI accepts `--tags tag1 tag2` (multiple space-separated values) — it does, per `index.ts` `.option('--tags <tags...>')`
+  - [x] When passing via execa: `runKayman(['start', project, '--tags', 'daily', 'client'])` — each tag as separate array element
 
 ## Dev Notes
 
@@ -138,8 +138,25 @@ Raycast `<Form>` doesn't have a built-in "back" button. To allow returning to th
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+N/A
 
 ### Completion Notes List
 
+- Added `selectedProject: string | null` state to drive two-view flow (list → form)
+- Tag form uses `Form.TextField` with whitespace-split parsing; empty submission passes no `--tags`
+- "Back to Projects" action added to form `ActionPanel` for explicit navigation
+- `runKayman` called with spread tags as separate array elements (matching CLI variadic `--tags <tags...>`)
+- Typecheck and lint pass cleanly
+
 ### File List
+
+- packages/raycast/src/start.tsx
+
+### Change Log
+
+- 2026-04-22: Implemented tag input step for Raycast start command (R1)
+- 2026-04-22: Code review fixes — null-guard on values.tags, autoFocus on tag field, popToRoot + state reset after success, corrected task 2.4 Escape navigation wording
