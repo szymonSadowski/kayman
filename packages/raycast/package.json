@@ -41,7 +41,8 @@
       "name": "menu-bar",
       "title": "Recording Indicator",
       "description": "Live recording duration in the menu bar",
-      "mode": "menu-bar"
+      "mode": "menu-bar",
+      "interval": "1s"
     }
   ],
   "scripts": {
