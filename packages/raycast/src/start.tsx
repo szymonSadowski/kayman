@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { List, showToast, Toast, ActionPanel, Action } from '@raycast/api'
+import { List, Form, showToast, Toast, ActionPanel, Action, popToRoot } from '@raycast/api'
 import { loadConfig } from '@kayman/shared'
 import type { Config } from '@kayman/shared'
 import { runKayman, showKaymanError } from './lib/cli'
@@ -7,6 +7,7 @@ import { runKayman, showKaymanError } from './lib/cli'
 export default function Start() {
   const [config, setConfig] = useState<Config | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedProject, setSelectedProject] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -35,6 +36,45 @@ export default function Start() {
     )
   }
 
+  if (selectedProject !== null) {
+    return (
+      <Form
+        actions={
+          <ActionPanel>
+            <Action.SubmitForm
+              title={`Start ${selectedProject}`}
+              onSubmit={async (values: { tags: string }) => {
+                const tags = (values.tags ?? '').trim().split(/\s+/).filter(Boolean)
+                const args: string[] = ['start', selectedProject]
+                if (tags.length > 0) args.push('--tags', ...tags)
+                try {
+                  await runKayman(args)
+                  await showToast({
+                    style: Toast.Style.Success,
+                    title: 'Recording started',
+                    message: tags.length > 0 ? `${selectedProject} [${tags.join(', ')}]` : selectedProject,
+                  })
+                  setSelectedProject(null)
+                  await popToRoot()
+                } catch (err) {
+                  await showKaymanError(err)
+                }
+              }}
+            />
+            <Action title="Back to Projects" onAction={() => setSelectedProject(null)} />
+          </ActionPanel>
+        }
+      >
+        <Form.TextField
+          id="tags"
+          title="Tags"
+          placeholder="daily client standup (space-separated, optional)"
+          autoFocus
+        />
+      </Form>
+    )
+  }
+
   return (
     <List>
       {config.projects.map((p) => (
@@ -45,14 +85,7 @@ export default function Start() {
             <ActionPanel>
               <Action
                 title={`Start ${p.name}`}
-                onAction={async () => {
-                  try {
-                    await runKayman(['start', p.name])
-                    await showToast({ style: Toast.Style.Success, title: 'Recording started', message: p.name })
-                  } catch (err) {
-                    await showKaymanError(err)
-                  }
-                }}
+                onAction={() => setSelectedProject(p.name)}
               />
             </ActionPanel>
           }
