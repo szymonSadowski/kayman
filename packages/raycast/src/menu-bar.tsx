@@ -1,22 +1,15 @@
-import { useEffect, useState } from 'react'
 import { MenuBarExtra, showToast, Toast, launchCommand, LaunchType } from '@raycast/api'
-import { readSession } from '@kayman/shared'
-import type { Session } from '@kayman/shared'
+import { readSessionFile } from '@kayman/shared'
 import { runKayman, showKaymanError } from './lib/cli'
 
 export default function MenuBar() {
-  const [session, setSession] = useState<Session | null>(null)
-  const [now, setNow] = useState<number>(Date.now())
-
-  useEffect(() => {
-    const tick = () => {
-      setSession(readSession())
-      setNow(Date.now())
-    }
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [])
+  let session = null
+  try {
+    session = readSessionFile()
+  } catch {
+    // non-ENOENT filesystem error — treat as no active session
+  }
+  const now = Date.now()
 
   if (!session) {
     return (
@@ -26,7 +19,8 @@ export default function MenuBar() {
     )
   }
 
-  const elapsedSec = Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000))
+  const startTime = new Date(session.startedAt).getTime()
+  const elapsedSec = Number.isNaN(startTime) ? 0 : Math.max(0, Math.floor((now - startTime) / 1000))
   const mm = String(Math.floor(elapsedSec / 60)).padStart(2, '0')
   const ss = String(elapsedSec % 60).padStart(2, '0')
   const project = session.project ?? 'memo'
