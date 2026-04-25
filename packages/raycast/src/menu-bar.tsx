@@ -1,11 +1,12 @@
 import { MenuBarExtra, showToast, Toast, launchCommand, LaunchType } from '@raycast/api'
-import { readSessionFile } from '@kayman/shared'
+import { readSessionFile, isProcessAlive } from '@kayman/shared'
 import { runKayman, showKaymanError } from './lib/cli'
 
 export default function MenuBar() {
   let session = null
   try {
-    session = readSessionFile()
+    const file = readSessionFile()
+    session = file && isProcessAlive(file.pid) ? file : null
   } catch {
     // non-ENOENT filesystem error — treat as no active session
   }

@@ -63,14 +63,21 @@ Without this, Raycast only re-renders the menubar command on user interaction (c
 
 `menu-bar.tsx` has a `useEffect` with `setInterval(tick, 1000)` that calls `setNow(Date.now())` and `setSession(readSession())`. This was the intended auto-update mechanism, but **Raycast menubar commands don't re-render from React state changes without the `interval` key** — React state updates only work if Raycast allows re-rendering.
 
-### Simplified Implementation (Recommended)
+### Actual Implementation
 
-With `"interval": "1s"`, Raycast re-mounts the component each second. The `useEffect` interval is no longer needed:
+With `"interval": "1s"`, Raycast re-mounts the component each second. The `useEffect` interval is no longer needed. `readSessionFile()` (non-destructive) is used with an explicit `isProcessAlive` guard so stale session files from crashed processes are ignored:
 
 ```tsx
+import { readSessionFile, isProcessAlive } from '@kayman/shared'
+
 export default function MenuBar() {
-  // Raycast re-mounts every 1s — no need for setInterval
-  const session = readSession()
+  let session = null
+  try {
+    const file = readSessionFile()
+    session = file && isProcessAlive(file.pid) ? file : null
+  } catch {
+    // non-ENOENT filesystem error — treat as no active session
+  }
   const now = Date.now()
 
   if (!session) {
@@ -81,7 +88,8 @@ export default function MenuBar() {
     )
   }
 
-  const elapsedSec = Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000))
+  const startTime = new Date(session.startedAt).getTime()
+  const elapsedSec = Number.isNaN(startTime) ? 0 : Math.max(0, Math.floor((now - startTime) / 1000))
   const mm = String(Math.floor(elapsedSec / 60)).padStart(2, '0')
   const ss = String(elapsedSec % 60).padStart(2, '0')
   const project = session.project ?? 'memo'
@@ -105,15 +113,15 @@ export default function MenuBar() {
         onAction={async () => {
           try {
             await launchCommand({ name: 'status', type: LaunchType.UserInitiated })
-          } catch { /* ignore */ }
+          } catch {
+            // launchCommand can fail if status command is disabled — ignore silently
+          }
         }}
       />
     </MenuBarExtra>
   )
 }
 ```
-
-This is cleaner and avoids any interaction between `setInterval` and Raycast's re-mount cycle.
 
 ### Note on `"interval"` Valid Values
 
@@ -160,7 +168,7 @@ None — implementation was straightforward.
 
 **Outcome:** Changes Requested → Fixed
 
-**Issues found and fixed:**
+**Issues found and fixed (Round 1):**
 
 - [H1][FIXED] `readSession()` re-throws non-ENOENT errors; bare call in render would crash the extension on any filesystem error. Switched to `readSessionFile()` + try/catch.
 - [M1][FIXED] `readSession()` deletes the session file as a side effect when the recording process is dead — a destructive write from a display-only render. Switched to `readSessionFile()` (non-destructive).
@@ -168,7 +176,13 @@ None — implementation was straightforward.
 - [L1][FIXED] `new Date(session.startedAt).getTime()` could produce NaN if `startedAt` is non-ISO; added `Number.isNaN` guard (falls back to 0s).
 - [L2][FIXED] Removed inline comment per project coding standards (comments only for non-obvious WHY).
 
+**Issues found and fixed (Round 2):**
+
+- [H1][FIXED] `readSessionFile()` doesn't check `isProcessAlive(session.pid)` — a crashed recording process leaves the session file on disk, causing the menu bar to show "Recording active" indefinitely. Added `isProcessAlive` guard: `session = file && isProcessAlive(file.pid) ? file : null`.
+- [M1][FIXED] Dev Notes code example was stale (missing try/catch, NaN guard, liveness check) — updated to match actual implementation.
+
 ### Change Log
 
 - 2026-04-25: R2 implemented — added `"interval": "1s"` to package.json menu-bar command, simplified menu-bar.tsx by removing redundant useEffect/useState
-- 2026-04-25: R2 review fixes — switched to readSessionFile (non-destructive + try/catch for H1/M1), NaN guard for startedAt (L1), removed redundant comment (L2)
+- 2026-04-25: R2 review fixes round 1 — switched to readSessionFile (non-destructive + try/catch for H1/M1), NaN guard for startedAt (L1), removed redundant comment (L2)
+- 2026-04-25: R2 review fixes round 2 — added isProcessAlive guard (H1: ghost session after process crash), updated Dev Notes to match actual implementation (M1)

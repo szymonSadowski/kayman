@@ -1,6 +1,6 @@
 # Story R3: Raycast Installation & Usage Docs
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -32,14 +32,14 @@ so that I can get the Raycast integration running without asking anyone.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create `docs/raycast.md` with full Raycast extension documentation (AC: 1–5)
-  - [ ] Prerequisites: kayman CLI installed and working, config at `~/.config/kayman/config.yaml`
-  - [ ] Installation section: Raycast → Extensions → `+` → Add Script Directory → point to `packages/raycast`
-  - [ ] Commands section: document all 6 commands with purpose and expected behavior
-  - [ ] Menu Bar section: pinning instructions, live timer appearance (`⏺ 00:12`)
-  - [ ] Troubleshooting section: CLI not found, config errors, extension not loading
-- [ ] Task 2: Create `docs/` directory if it doesn't exist (also needed for C4)
-  - [ ] Check if `docs/` exists at repo root
+- [x] Task 1: Create `docs/raycast.md` with full Raycast extension documentation (AC: 1–5)
+  - [x] Prerequisites: kayman CLI installed and working, config at `~/.config/kayman/config.yaml`
+  - [x] Installation section: Raycast → Extensions → `+` → Add Script Directory → point to `packages/raycast`
+  - [x] Commands section: document all 6 commands with purpose and expected behavior
+  - [x] Menu Bar section: pinning instructions, live timer appearance (`⏺ 00:12`)
+  - [x] Troubleshooting section: CLI not found, config errors, extension not loading
+- [x] Task 2: Create `docs/` directory if it doesn't exist (also needed for C4)
+  - [x] Check if `docs/` exists at repo root
 
 ## Dev Notes
 
@@ -93,8 +93,25 @@ From `packages/raycast/package.json` `commands` array:
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+None — docs-only story, no debugging required.
 
 ### Completion Notes List
 
+- Created `docs/raycast.md` covering all 6 Raycast commands (Start, Stop, Last, Memo, Status, Menu Bar)
+- Installation section uses dev mode (Add Script Directory) per AC 2
+- Menu bar pinning steps and `⏺ MM:SS` live timer appearance documented per AC 4
+- Troubleshooting covers CLI not found (PATH fix), config errors (kayman verify), extension not loading, and menu bar not updating per AC 5
+- `docs/` directory already existed (contains `cli.md`) — Task 2 confirmed complete
+- All 5 ACs satisfied; no code changes made
+
 ### File List
+
+- `docs/raycast.md` (new)
+
+## Change Log
+
+- 2026-04-25: Story R3 implemented — created docs/raycast.md with full Raycast extension documentation
