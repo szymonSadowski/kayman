@@ -9,20 +9,20 @@ Update story status by moving it between sections. Each story is designed for a 
 ### Epic: CLI Improvements
 
 - [x] **C3** Memo Auto-Tag and Focused Prompt — [spec](implementation-artifacts/c3-memo-auto-tag-focused-prompt.md)
-- [ ] **C4** CLI Docs — [spec](implementation-artifacts/c4-cli-docs.md)
+- [x] **C4** CLI Docs — [spec](implementation-artifacts/c4-cli-docs.md)
 - [x] **C5** AI Cost Tracking — Price Column in Notion — [spec](implementation-artifacts/c5-ai-cost-tracking-notion.md)
 
 ### Epic: Raycast Improvements
 
-- [ ] **R1** Tag Support in Raycast Start Command — [spec](implementation-artifacts/r1-raycast-tag-support.md)
-- [ ] **R2** Auto-Updating Menubar Timer — [spec](implementation-artifacts/r2-menubar-auto-update.md)
-- [ ] **R3** Raycast Installation & Usage Docs — [spec](implementation-artifacts/r3-raycast-docs.md)
+- [x] **R1** Tag Support in Raycast Start Command — [spec](implementation-artifacts/r1-raycast-tag-support.md)
+- [x] **R2** Auto-Updating Menubar Timer — [spec](implementation-artifacts/r2-menubar-auto-update.md)
+- [x] **R3** Raycast Installation & Usage Docs — [spec](implementation-artifacts/r3-raycast-docs.md)
 
 ### Epic: Identity & Branding
 
-- [ ] **B1** CLI ASCII Banner — [spec](implementation-artifacts/b1-cli-ascii-banner.md)
-- [ ] **B2** Raycast Extension Icon — [spec](implementation-artifacts/b2-raycast-extension-icon.md)
-- [ ] **B3** macOS Notification Icon — [spec](implementation-artifacts/b3-macos-notification-icon.md)
+- [x] **B1** CLI ASCII Banner — [spec](implementation-artifacts/b1-cli-ascii-banner.md)
+- [x] **B2** Raycast Extension Icon — [spec](implementation-artifacts/b2-raycast-extension-icon.md)
+- [x] **B3** macOS Notification Icon — [spec](implementation-artifacts/b3-macos-notification-icon.md)
 
 ---
 
