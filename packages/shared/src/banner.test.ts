@@ -14,20 +14,10 @@ describe('printBanner — TTY mode', () => {
     vi.resetModules()
   })
 
-  it('writes banner to stdout in TTY', () => {
+  it('does not write to stdout', () => {
     const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
     banner.printBanner()
-    expect(write).toHaveBeenCalledOnce()
-    const output = write.mock.calls[0][0] as string
-    expect(output).toContain('@')
-    write.mockRestore()
-  })
-
-  it('banner output contains kayman ASCII art', () => {
-    const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
-    banner.printBanner()
-    const output = write.mock.calls[0][0] as string
-    expect(output.split('\n').length).toBeGreaterThan(10)
+    expect(write).not.toHaveBeenCalled()
     write.mockRestore()
   })
 })

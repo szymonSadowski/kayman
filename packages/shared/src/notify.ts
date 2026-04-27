@@ -3,10 +3,6 @@ import path from 'path'
 import fs from 'fs'
 import { PipelineStage } from './types'
 
-const ICON_PATH = path.resolve(__dirname, '../assets/kayman.png')
-const ICON_EXISTS = fs.existsSync(ICON_PATH)
-const iconField = ICON_EXISTS ? { contentImage: ICON_PATH } : {}
-
 const STAGE_MESSAGES: Record<PipelineStage, string> = {
   [PipelineStage.Recording]: 'Recording started',
   [PipelineStage.Transcribing]: 'Transcribing...',
@@ -15,16 +11,25 @@ const STAGE_MESSAGES: Record<PipelineStage, string> = {
   [PipelineStage.Done]: 'Done — entry created in Notion',
 }
 
+function iconField(): { contentImage: string } | Record<string, never> {
+  try {
+    const iconPath = path.resolve(__dirname, '../assets/kayman.png')
+    return fs.existsSync(iconPath) ? { contentImage: iconPath } : {}
+  } catch {
+    return {}
+  }
+}
+
 export function notify(stage: PipelineStage): void {
   notifier.notify({
     title: 'kayman',
     message: STAGE_MESSAGES[stage],
-    ...iconField,
+    ...iconField(),
   })
 }
 
 export function notifyCustom(message: string): void {
-  notifier.notify({ title: 'kayman', message, ...iconField })
+  notifier.notify({ title: 'kayman', message, ...iconField() })
 }
 
 export function notifyError(
@@ -38,6 +43,6 @@ export function notifyError(
   notifier.notify({
     title: 'kayman',
     message: detail,
-    ...iconField,
+    ...iconField(),
   })
 }
